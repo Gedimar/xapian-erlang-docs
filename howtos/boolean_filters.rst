@@ -31,31 +31,29 @@ don't need to store "within document frequency" information.  A field like
 this, which we're using to restrict the results returned from a search rather
 than as part of the weighted search, is referred to as a `boolean term`.
 
-We can therefore just add the identifiers to the ``Document`` directly,
-after splitting on semicolons, using the ``add_boolean_term()`` method.
+To add a boolean term `Term`, you should set the field `frequency` of the 
+`#x_term` record to zero:
 
-.. literalinclude:: /code/python/index_filters.py
-    :start-after: Start of new indexing code
-    :end-before: End of new indexing code
-
-A full copy of the indexer with this updated code is available in
-``code/python/index_filters.py``.
+.. code-block:: erlang
+    #x_term{frequency = 0, value = Term}
 
 If we check the resulting index with delve, we will see that documents for
 which there was a value in the ``MATERIALS`` field now contain terms with the
 ``XM`` prefix (output snipped to show the relevant lines)::
 
-    $ delve -r 3 -1 db
-    Term List for record #3:
-    ...
-    XDwooden
-    XMglass
-    XMmounted
-    XMsand
-    XMtimer
-    XMwood
-    ZSabbot
-    ...
+    $ delve -r 3 -1 priv/test_db/filters | grep "ZX"
+    ZXDabbot
+    ZXDb
+    ZXDglass
+    ZXDhorn
+    ZXDin
+    ZXDlog
+    ZXDmount
+    ZXDno
+    ZXDsec
+    ZXDship
+    ZXDtype
+    ZXDwooden
 
 Searching
 ---------
