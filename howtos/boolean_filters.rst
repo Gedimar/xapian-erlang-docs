@@ -66,25 +66,24 @@ checkbox is selected.
 
 To build a query which performs this task, we can take the Query object
 returned by the query parser, and combine it with a manually built Query
-representing the checkboxes which are selected, using the ``OP_FILTER``
+representing the checkboxes which are selected, using the ``'FILTER'``
 operator.  If multiple checkboxes are selected, we need to combine the Query
-objects for each checkbox with an ``OP_OR`` operator.
+objects for each checkbox with an ``'OR'`` operator.
 
 An arbitrarily complex Query tree can be built using queries returned from the
 QueryParser and manually constructed Query objects, which allows very flexible
 filtering of the results from parsed queries.
 
-.. literalinclude:: /code/python/search_filters.py
-    :start-after: Start of example code
-    :end-before: End of example code
+.. code-block:: erlang
+    #x_query{op = 'FILTER', value = [MainQuery, FilterQuery]}.
 
 A full copy of the this updated search code is available in
-``code/python/search_filters.py``.  With this, we could perform a search for
+``bin/search_filters.escript``.  With this, we could perform a search for
 documents matching "clock", and filter the results to return only those with a
 value of ``"steel (metal)"`` as one of the semicolon separated values in the
 materials field::
 
-    $ python code/python/search_filters.py db clock 'steel (metal)'
+    $ ./bin/search_filters.escript priv/test_db/filters clock 'steel (metal)'
     1: #012 Assembled and unassembled EXA electric clock kit
     2: #098 'Pond' electric clock movement (no dial)
     3: #052 Reconstruction of Dondi's Astronomical Clock, 1974
@@ -92,8 +91,8 @@ materials field::
     5: #024 Regulator Clock with Gravity Escapement
     6: #097 Bain's subsidiary electric clock
     7: #009 Copy  of a Dwerrihouse skeleton clock with coup-perdu escape
-    8: #091 Pendulum clock designed by Galileo in 1642 and made by his son in 1649, model.
-    INFO:xapian.search:'clock'.material(['steel (metal)'])[0:10] = 12 98 52 59 24 97 9 91
+    8: #091 Pendulum clock designed by Galileo in 1642 and made by his son in
+       1649, model.
 
 
 Using the query parser
@@ -103,21 +102,26 @@ The previous section shows how to write code to filter the results of a query
 programmatically.  This can be very flexible, but sometimes you want users to be
 able to specify filters themselves, within the text query that they enter.
 
-You can do this using the ``QueryParser.add_boolean_prefix()`` method.  This
-lets you tell the query parser about a field to use for filtering, and the
-prefix that terms have been stored in for that term.  For our materials search,
-we just need to a add a single line to the search code:
+You can do this filling the ``#x_query_parser.prefixes`` field with the list of
+``#x_prefix_name`` records. Set ``is_boolean`` field to ``true`` for using of
+these terms as a filter.
 
-.. literalinclude:: /code/python/search_filters2.py
-    :start-after: Start of example code
-    :end-before: End of example code
-    :emphasize-lines: 21-26
+.. code-block:: erlang
+    XM = #x_prefix_name{name = material, prefix = "XM", is_boolean=true},
+    #x_query_parser{prefixes=[XM]}.
+
+You can also pass the ``#x_prefix_name`` record as a parameter of the
+``xapian_server:open/2`` function.
+
+This lets you tell the query parser about a field to use for filtering, and the
+prefix that terms have been stored in for that term.  There is a modified
+version of our script here: ``bin/search_filters2.escript``.
 
 Users can then perform a filtered search by preceding a word or phrase with
 "material:", similar to the syntax supported for this sort of thing by many web
 search engines::
 
-    $ python code/python/search_filters2.py db 'clock material:"steel (metal)"'
+    $ ./bin/search_filters2.escript priv/test_db/filters 'clock material:"steel (metal)"'
     1: #012 Assembled and unassembled EXA electric clock kit
     2: #098 'Pond' electric clock movement (no dial)
     3: #052 Reconstruction of Dondi's Astronomical Clock, 1974
@@ -125,8 +129,8 @@ search engines::
     5: #024 Regulator Clock with Gravity Escapement
     6: #097 Bain's subsidiary electric clock
     7: #009 Copy  of a Dwerrihouse skeleton clock with coup-perdu escape
-    8: #091 Pendulum clock designed by Galileo in 1642 and made by his son in 1649, model.
-    INFO:xapian.search:'clock material:"steel (metal)"'[0:10] = 12 98 52 59 24 97 9 91
+    8: #091 Pendulum clock designed by Galileo in 1642 and made by his son in
+       1649, model.
 
 What to supply to the query parser
 ----------------------------------
