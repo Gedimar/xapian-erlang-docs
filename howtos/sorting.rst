@@ -13,10 +13,9 @@ a combination of other criteria and relevance score.
 If two or more results compare equal by the sorting criteria, then their
 order is decided by their document ids.  By default, the document ids sort
 in ascending order (so a lower document id is "better"), but descending
-order can be chosen using ``enquire.set_docid_order(enquire.DESCENDING);``.
+order can be chosen using ``#x_enquire.docid_order = desc``.
 If you have no preference, you can tell Xapian to use whatever order is
-most efficient using ``enquire.set_docid_order(enquire.DONT_CARE);``.
-
+most efficient using ``#x_enquire.docid_order = dont_care``.
 It is also possible to change the way that the relevance scores are calculated
 - for details, see the :ref:`document on weighting schemes and
   document scoring <weighting_scheme>` for details.
@@ -27,21 +26,33 @@ Sorting by Value
 You can order documents by comparing a specified document value.  Note that the
 comparison used compares the byte values in the value (i.e. it's a string sort
 ignoring locale), so ``1`` < ``10`` < ``2``.  If you want to encode the value
-such that it sorts numerically, use ``Xapian::sortable_serialise()`` to encode
-values at index time - this works equally well on integers and floating point
-values::
+such that it sorts numerically, use a typed value slot. For example, for slot
+with name "price", use:
 
-    Xapian::Document doc;
-    doc.add_value(0, Xapian::sortable_serialise(price));
+.. code-block:: erlang
+    Price = 600.5,
+    %% Pass #x_value_name as a parameter
+    {ok, Server} = xapian_server:open(Path, 
+        [#x_value_name{name = price, slot = 0, type = float}|Params]),
+    %% Use a named slot. Pass Price as a float.
+    Doc = [ #x_value{slot = price, value = Price} ],
+    xapian_server:add_document(Server, Doc).
 
-There are three methods which are used to specify how the value is used to
-sort, depending if/how you want relevance used in the ordering:
+You can sort by value with the next code:
 
- * ``Enquire::set_sort_by_value()`` specifies the relevance doesn't affect the
+.. code-block:: erlang
+    #x_enquire{order = #x_sort_order{type = Type, slot = Slot}
+
+.. see xapian_type:x_order_type().
+
+The ``#x_sort_order.type`` field defines the order algorithm. The valid values
+are:
+
+ * ``value`` specifies the relevance doesn't affect the
    ordering at all.
- * ``Enquire::set_sort_by_value_then_relevance()`` specifies that relevance is
+ * ``value_relevance`` specifies that relevance is
    used for ordering any groups of documents for which the value is the same.
- * ``Enquire::set_sort_by_relevance_then_value()`` specifies that documents are
+ * ``relevance_value`` specifies that documents are
    ordered by relevance, and the value is only used to order groups of documents
    with identical relevance values (note: the weight has to be exactly the same
    for values to determine the order, so this method isn't very useful when
