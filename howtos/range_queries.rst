@@ -38,8 +38,8 @@ How Xapian supports range queries
 
 If you think back to when we introduced the query concepts behind
 Xapian, you'll remember that one group of query operators is
-responsible for handling *value ranges*: `OP_VALUE_LE`, `OP_VALUE_GE`
-and `OP_VALUE_RANGE`. So we'll be tackling range queries by using
+responsible for handling *value ranges*: `VALUE LE`, `VALUE GE`
+and `VALUE RANGE`. So we'll be tackling range queries by using
 document values, and constructing queries using these operators to
 restrict matches suitably.
 
@@ -56,6 +56,14 @@ a pair of utility functions: `sortable_serialise` and
 `sortable_unserialise`, which convert between floating point numbers
 (strictly, each works with a `double`) and a string that will sort in
 the same way and so can be compared easily.
+
+You can fill `#x_value_name.type` with the `float` value and pass this record
+to `xapian_server:open/2` as a parameter.
+
+.. code-block:: erlang
+    #x_value_name{slot = 1, name = admitted_year, type = float}.
+
+After this, serializition will be done automaticly.
 
 Creating the document values
 ----------------------------
@@ -94,17 +102,23 @@ dimensions must be specified with the suffix 'mm', but years are just
 numbers. For this to work, we have to tell QueryParser about the value
 range with a suffix first:
 
-.. literalinclude:: /code/python/search_ranges.py
-    :start-after: and add in value range processors
-    :end-before: And parse the query
+.. code-block:: erlang
+    Procs = [xapian_resource:number_value_range_processor(0, "mm", suffix)
+            ,xapian_resource:number_value_range_processor(1) ],
+    Query = #x_query_string{
+        value = QueryStr,
+        parser = #x_query_parser{value_range_processors = Procs}}.
 
-The first call has a final parameter of `False` to say that 'mm' is a
-suffix (the default is for it to be a prefix). When using the empty
+We use a `xapian_resource:number_value_range_processor/X` function for creating
+a resource constructor of the `NumberValueRangeProcessor` object.
+
+The first call has a final parameter of `suffix` (or `false`) to say that
+'mm' is a suffix (the default is for it to be a prefix). When using the empty
 string, as in the second call, it doesn't matter whether you say it's
 a suffix or prefix, so it's convenient to skip that parameter.
 
 
-This is implemented in `code/python/search_ranges.py`, which also
+This is implemented in `bin/search_ranges.escript`, which also
 modifies the output to show the measurements and date made fields as
 well as the title.
 
@@ -145,10 +159,10 @@ If you get the rules wrong, the QueryParser will raise a
 either signal to the user or perhaps try the query again without the
 `ValueRangeProcessor` that tripped up::
 
-    $ ./bin/search_ranges.escript priv/test_db/ranges 1000mm..                    
+    $ ./bin/search_ranges.escript priv/test_db/ranges 1000mm..
     escript: exception error: {x_error,<<"QueryParserError">>,
                               <<"Unknown range operation">>}
-      in function  xapian_server:client_error_handler/1 
+      in function  xapian_server:client_error_handler/1
         (src/xapian_server.erl, line 1110)
       in call from erl_eval:do_apply/6 (erl_eval.erl, line 572)
     ...
@@ -191,14 +205,23 @@ ones::
 With this done, we can change the set of value range processors we
 give to the QueryParser.
 
+Here `DateValueRangeProcessor` is created:
     
+.. code-block:: erlang
+    xapian_resource:date_value_range_processor(2, 1860, true).
 
 The `DateValueRangeProcessor` is working on value slot 2, with an
 "epoch" of 1860 (so two digit years will be considered as starting at
 1860 and going forward as far 1959). The second parameter is whether
 it should prefer US style dates or not; since we're looking at US
-states, we've gone for US dates. The `NumberValueRangeProcessor` is as
-we saw before.
+states, we've gone for US dates. 
+
+This code can be rewritten using a name of the slot as a first parameter:
+
+.. code-block:: erlang
+    xapian_resource:date_value_range_processor(admitted, 1860, true).
+
+The `NumberValueRangeProcessor` is as we saw before.
 
 This enables us to search for any state that talks about the Spanish
 in its description::
