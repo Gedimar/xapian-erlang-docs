@@ -62,7 +62,7 @@ are:
 We'll use the states dataset to demonstrate this, and the code from
 dealing with dates in the :ref:`range queries <range_queries>` HOWTO::
 
-    $ ./bin/index_ranges2.escript priv/states.csv priv/test_db/states
+    $ ./bin/index_ranges2.escript priv/states.csv priv/test_db/ranges2
 
 This has three document values: slot 1 has the year of admission to
 the union, slot 2 the full date (as "YYYYMMDD"), and slot 3 the latest
@@ -78,7 +78,7 @@ union and then within that by relevance, we want to add the following:
 The `#x_sort_order.reverse` parameter is `False` for ascending order, 
 `True` for descending. We can then run sorted searches like this::
 
-    ./bin/search_sorting.escript priv/test_db/states spanish
+    $ ./bin/search_sorting.escript priv/test_db/ranges spanish
     1: #019            State of Texas       18451229          25145561
     2: #004          State of Montana       18891108            989415
 
@@ -106,9 +106,9 @@ entry to the union and then by decreasing population.
 
 The second parameter is a list of value names or slots.
 If you want to reverse the value's order, put it inside the ``{reverse, Slot}``
-tuple.
+tuple::
 
-    ./bin/search_sorting2.escript priv/test_db/states State
+    $ ./bin/search_sorting2.escript priv/test_db/ranges2 State
      1: #041   Commonwealth of Pennsylva   17871212     12702379
      2: #044   State of New Jersey         17871218      8791894
      3: #050   State of Delaware           17871207       897934
