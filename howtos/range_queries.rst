@@ -61,6 +61,7 @@ You can fill `#x_value_name.type` with the `float` value and pass this record
 to `xapian_server:open/2` as a parameter.
 
 .. code-block:: erlang
+
     #x_value_name{slot = 1, name = admitted_year, type = float}.
 
 After this, serializition will be done automaticly.
@@ -103,6 +104,7 @@ numbers. For this to work, we have to tell QueryParser about the value
 range with a suffix first:
 
 .. code-block:: erlang
+
     Procs = [xapian_resource:number_value_range_processor(0, "mm", suffix)
             ,xapian_resource:number_value_range_processor(1) ],
     Query = #x_query_string{
@@ -208,6 +210,7 @@ give to the QueryParser.
 Here `DateValueRangeProcessor` is created:
     
 .. code-block:: erlang
+
     xapian_resource:date_value_range_processor(2, 1860, true).
 
 The `DateValueRangeProcessor` is working on value slot 2, with an
@@ -219,6 +222,7 @@ states, we've gone for US dates.
 This code can be rewritten using a name of the slot as a first parameter:
 
 .. code-block:: erlang
+
     xapian_resource:date_value_range_processor(admitted, 1860, true).
 
 The `NumberValueRangeProcessor` is as we saw before.

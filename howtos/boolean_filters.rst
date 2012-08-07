@@ -35,6 +35,7 @@ To add a boolean term `Term`, you should set the field `frequency` of the
 `#x_term` record to zero:
 
 .. code-block:: erlang
+
     #x_term{frequency = 0, value = Term}
 
 If we check the resulting index with delve, we will see that documents for
@@ -75,6 +76,7 @@ QueryParser and manually constructed Query objects, which allows very flexible
 filtering of the results from parsed queries.
 
 .. code-block:: erlang
+
     #x_query{op = 'FILTER', value = [MainQuery, FilterQuery]}.
 
 A full copy of the this updated search code is available in
@@ -107,6 +109,7 @@ You can do this filling the ``#x_query_parser.prefixes`` field with the list of
 these terms as a filter.
 
 .. code-block:: erlang
+
     XM = #x_prefix_name{name = material, prefix = "XM", is_boolean=true},
     #x_query_parser{prefixes=[XM]}.
 

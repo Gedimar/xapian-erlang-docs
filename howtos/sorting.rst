@@ -30,6 +30,7 @@ such that it sorts numerically, use a typed value slot. For example, for slot
 with name "price", use:
 
 .. code-block:: erlang
+
     Price = 600.5,
     %% Pass #x_value_name as a parameter
     {ok, Server} = xapian_server:open(Path, 
@@ -41,6 +42,7 @@ with name "price", use:
 You can sort by value with the next code:
 
 .. code-block:: erlang
+
     #x_enquire{order = #x_sort_order{type = Type, slot = Slot}
 
 .. see xapian_type:x_order_type().
@@ -70,6 +72,7 @@ population estimate. So if we want to sort by year of entry to the
 union and then within that by relevance, we want to add the following:
 
 .. code-block:: erlang
+
     #x_enquire{value = Query,                               
                order = #x_sort_order{type = value_relevance,
                                     value = admitted_year}}.

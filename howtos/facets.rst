@@ -51,6 +51,7 @@ Faceting information is collected, using `Xapian::ValueCountMatchSpy` object,
 that can be created, calling
 
 .. code-block:: erlang
+
     MatchSpyRes = xapian_match_spy:value_count(Server, SlotNumberOrName).
 
 This function returns a resource, that collects information during
@@ -67,6 +68,7 @@ Then, you can extract statistics using few functions, defined inside
 the `xapian_term_qlc` module.
     
 .. code-block:: erlang
+
     value_count_match_spy_table(Server, SpyRes, Meta).
     top_value_count_match_spy_table(Server, SpyRes, Limit, Meta).
 
@@ -79,11 +81,13 @@ by a record. The record can have only two fields: `value` and `freq`.
 `Meta` describes the format of the record. It can be created, using:
 
 .. code-block:: erlang
+
     xapian_term_record:record(RecName, RecFields).
 
 For example:
 
 .. code-block:: erlang
+
     %% On the top of the file
     -record(spy_term, {value :: unicode:unicode_binary(), 
                         freq :: non_neg_integer()}).
@@ -137,6 +141,7 @@ passing a list of spies. Although each additional one will have some
 performance impact.
 
 .. code-block:: erlang
+
     MSetParams = #x_match_set{
         enquire = EnquireRes,
         spies = [MatchSpyRes1, MatchSpyRes2]}.
@@ -144,6 +149,7 @@ performance impact.
 Finally, the resource should be deallocated.
 
 .. code-block:: erlang
+
     xapian_server:release_resource(MatchSpyRes).
 
 
