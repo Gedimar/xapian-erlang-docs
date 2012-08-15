@@ -1,0 +1,179 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Updating the database &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Indexing" href="index.html" />
+    <link rel="next" title="Searching" href="../searching/index.html" />
+    <link rel="prev" title="Verifying the index using delve" href="verifying_the_index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../searching/index.html" title="Searching"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="verifying_the_index.html" title="Verifying the index using delve"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Indexing</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="updating-the-database">
+<h1>Updating the database<a class="headerlink" href="#updating-the-database" title="Permalink to this headline">¶</a></h1>
+<p>If you look back at the verifying step of the database, you may notice
+that the first item we have indexed has the word &#8216;compass&#8217; spelled
+incorrectly, which means that we will need to either update just that
+document, or to re-index the entire database.</p>
+<p>Reindexing the database can be done immediately using the <cite>index1.py</cite> script
+we used for the initial indexing; this is because we are using an external
+ID for each document we add to the database, taken from the <cite>id_NUMBER</cite>
+field from the original data set. We then pass this to the <cite>replace_document</cite>
+method, which updates if there&#8217;s already a document under that external ID,
+or adds a document to the database otherwise.</p>
+<p>In fact, because of this, <cite>index1.py</cite> can update just part of the
+database. Just give it a file with only the rows that correspond to
+documents that need updating. Everything else in the database will be
+left untouched.</p>
+<div class="section" id="deleting-documents">
+<h2>Deleting documents<a class="headerlink" href="#deleting-documents" title="Permalink to this headline">¶</a></h2>
+<p>It is also possible to delete documents from the index using the
+<cite>delete_document</cite> method on a WritableDatabase object. This can be
+done either by Xapian docid or using unique ID terms, as with
+<cite>replace_document</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">xapian</span>
+
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">dbpath</span><span class="p">,</span> <span class="n">identifiers</span><span class="p">):</span>
+    <span class="c"># Open the database we&#39;re going to be deleting from.</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">xapian</span><span class="o">.</span><span class="n">WritableDatabase</span><span class="p">(</span><span class="n">dbpath</span><span class="p">,</span> <span class="n">xapian</span><span class="o">.</span><span class="n">DB_CREATE_OR_OPEN</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="n">identifiers</span><span class="p">:</span>
+        <span class="n">idterm</span> <span class="o">=</span> <span class="s">u&#39;Q&#39;</span> <span class="o">+</span> <span class="n">identifier</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">delete_document</span><span class="p">(</span><span class="n">idterm</span><span class="p">)</span>
+
+
+<span class="n">delete</span><span class="p">(</span><span class="n">dbpath</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">identifiers</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+</pre></div>
+</div>
+<p>A copy of this code is available in <tt class="docutils literal"><span class="pre">code/python/delete1.py</span></tt>.</p>
+<p>Then we just run our deletion tool, giving it identifiers taken from
+the <cite>id_NUMBER</cite> field in the data set:</p>
+<div class="highlight-python"><pre>$ python code/python/delete1.py db 1953-448 1985-438</pre>
+</div>
+<p>After that, we expect to see two fewer documents in our database using delve:</p>
+<div class="highlight-python"><pre>$ delve db
+UUID = 1820ef0a-055b-4946-ae73-67aa4ef5c226
+number of documents = 98
+average document length = 100.041
+document length lower bound = 33
+document length upper bound = 251
+highest document id ever used = 100
+has positional information = true</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Updating the database</a><ul>
+<li><a class="reference internal" href="#deleting-documents">Deleting documents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="verifying_the_index.html"
+                        title="previous chapter">Verifying the index using delve</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../searching/index.html"
+                        title="next chapter">Searching</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/practical_example/indexing/updating_the_database.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../searching/index.html" title="Searching"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="verifying_the_index.html" title="Verifying the index using delve"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" >Indexing</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,145 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Values &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Indexing concepts" href="index.html" />
+    <link rel="next" title="Index limitations" href="limitations.html" />
+    <link rel="prev" title="Using identifiers with Xapian" href="uniqueness.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="limitations.html" title="Index limitations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="uniqueness.html" title="Using identifiers with Xapian"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Indexing concepts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="values">
+<h1>Values<a class="headerlink" href="#values" title="Permalink to this headline">¶</a></h1>
+<p><cite>Values</cite> are in a sense a more flexible version of terms. Each document can
+have a set of values associated with it, which hold pieces of data which
+can be useful during a search. These pieces of data could be things such as
+keys which you want to be able to sort the results on, numeric values used
+for range searches, or numbers to be used to affect the weight calculated
+for documents during the search.</p>
+<p>Each value is stored in a numbered <cite>slot</cite>; so for example, a document might
+have a value indicating a category in slot 0, a value indicating a price in
+slot 1, and a value indicating some measure of the importance of the
+document in slot 10.  It&#8217;s fine to use widely separated slot numbers - the
+data isn&#8217;t stored in a simple array.  Slot numbers can be any 32 bit
+unsigned integer, except for <tt class="docutils literal"><span class="pre">0xffffffff</span></tt> which has a special meaning
+(it&#8217;s <tt class="docutils literal"><span class="pre">Xapian::BAD_VALUENO</span></tt> which is used to indicate things like &#8220;not
+sorting on any value slot&#8221;).</p>
+<p>The core of Xapian treats the contents of value slots as opaque binary
+strings, rather than having support for numeric value types.  This becomes
+significant if you want to perform range searches based on a value stored in
+a slot, or to sort results based on the value stored in a slot.  To allow
+this type of use of slots, Xapian provides a utility function,
+<cite>sortable_serialise</cite>, which serialises a numeric value into a binary string
+in such a way that the sort order of the resulting binary string matches
+the numeric sort order of the unserialised values.</p>
+<p>It is important to keep the amount of data stored in the values to a
+minimum, since the values for a large number of documents may be read
+during the search, and unused information will thus slow the search down.
+Developers are sometimes tempted to use the value slots to hold information
+which should really be stored in the document&#8217;s data area; don&#8217;t succumb to
+this temptation!</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="uniqueness.html"
+                        title="previous chapter">Using identifiers with Xapian</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="limitations.html"
+                        title="next chapter">Index limitations</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/concepts/indexing/values.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="limitations.html" title="Index limitations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="uniqueness.html" title="Using identifiers with Xapian"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" >Indexing concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

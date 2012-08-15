@@ -1,0 +1,163 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Building the search &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Searching" href="index.html" />
+    <link rel="next" title="Running a Search" href="running_the_search.html" />
+    <link rel="prev" title="Searching" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="running_the_search.html" title="Running a Search"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Searching"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Searching</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="building-the-search">
+<h1>Building the search<a class="headerlink" href="#building-the-search" title="Permalink to this headline">¶</a></h1>
+<p>Now we have our database populated with some values, it is time for
+the code to search the database and display some results.</p>
+<p>We want to take some text from the user, and search for it in the
+database; to do that we need to convert it into a Xapian Query, which
+you will recall is a tree made up of terms (which in this case will be
+the stemmed forms of words in the text from the user), and operations
+such as AND, OR and so forth.</p>
+<p>There are many ways to go from the user&#8217;s text to a Query, but the
+most simple of these is to use the QueryParser.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">dbpath</span><span class="p">,</span> <span class="n">querystring</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pagesize</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="c"># offset - defines starting point within result set</span>
+    <span class="c"># pagesize - defines number of records to retrieve</span>
+
+    <span class="c"># Open the database we&#39;re going to search.</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">xapian</span><span class="o">.</span><span class="n">Database</span><span class="p">(</span><span class="n">dbpath</span><span class="p">)</span>
+
+    <span class="c"># Set up a QueryParser with a stemmer and suitable prefixes</span>
+    <span class="n">queryparser</span> <span class="o">=</span> <span class="n">xapian</span><span class="o">.</span><span class="n">QueryParser</span><span class="p">()</span>
+    <span class="n">queryparser</span><span class="o">.</span><span class="n">set_stemmer</span><span class="p">(</span><span class="n">xapian</span><span class="o">.</span><span class="n">Stem</span><span class="p">(</span><span class="s">&quot;en&quot;</span><span class="p">))</span>
+    <span class="n">queryparser</span><span class="o">.</span><span class="n">set_stemming_strategy</span><span class="p">(</span><span class="n">queryparser</span><span class="o">.</span><span class="n">STEM_SOME</span><span class="p">)</span>
+    <span class="n">queryparser</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="s">&quot;title&quot;</span><span class="p">,</span> <span class="s">&quot;S&quot;</span><span class="p">)</span>
+    <span class="n">queryparser</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="s">&quot;description&quot;</span><span class="p">,</span> <span class="s">&quot;XD&quot;</span><span class="p">)</span>
+
+    <span class="c"># And parse the query</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">queryparser</span><span class="o">.</span><span class="n">parse_query</span><span class="p">(</span><span class="n">querystring</span><span class="p">)</span>
+
+    <span class="c"># Use an Enquire object on the database to run the query</span>
+    <span class="n">enquire</span> <span class="o">=</span> <span class="n">xapian</span><span class="o">.</span><span class="n">Enquire</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+    <span class="n">enquire</span><span class="o">.</span><span class="n">set_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="c"># And print out something about each match</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">enquire</span><span class="o">.</span><span class="n">get_mset</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">pagesize</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+        <span class="k">print</span> <span class="s">u&quot;</span><span class="si">%(rank)i</span><span class="s">: #</span><span class="si">%(docid)3.3i</span><span class="s"> </span><span class="si">%(title)s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s">&#39;rank&#39;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;docid&#39;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">docid</span><span class="p">,</span>
+            <span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;TITLE&#39;</span><span class="p">,</span> <span class="s">u&#39;&#39;</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">docid</span><span class="p">)</span>
+
+    <span class="c"># Finally, make sure we log the query and displayed results</span>
+    <span class="n">support</span><span class="o">.</span><span class="n">log_matches</span><span class="p">(</span><span class="n">querystring</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pagesize</span><span class="p">,</span> <span class="n">matches</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A full copy of this code is available in <tt class="docutils literal"><span class="pre">code/python/search1.py</span></tt>.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Searching</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="running_the_search.html"
+                        title="next chapter">Running a Search</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/practical_example/searching/building.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="running_the_search.html" title="Running a Search"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Searching"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" >Searching</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Collapsing of Search Results &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" />
+    <link rel="up" title="How To..." href="index.html" />
+    <link rel="next" title="Spelling Correction" href="spelling.html" />
+    <link rel="prev" title="Sorting" href="sorting.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="spelling.html" title="Spelling Correction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sorting.html" title="Sorting"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">How To...</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="collapsing-of-search-results">
+<h1>Collapsing of Search Results<a class="headerlink" href="#collapsing-of-search-results" title="Permalink to this headline">¶</a></h1>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Write about how to use collapsing with searches.  Discuss collapsing
+to return only a unique item for each value, and collapsing to return
+multiple.  Make clear that it simply excludes some items from the
+result set; doesn&#8217;t reorder results, or guarantee to return the top N
+from each category.</p>
+</div>
+<p>Xapian provides the ability to eliminate &#8220;duplicate&#8221; documents from the MSet.
+This feature is known as &#8220;collapsing&#8221; - think of a pile of duplicates being
+collapsed down to leave a single result (or a small number of results).</p>
+<p>The collapsing always removes the worse ranked documents (if ranking by
+relevance, those with the lowest weight; if ranking by sorting, those which
+sort lowest).</p>
+<p>Whether two documents count as duplicates of one another is determined by their
+&#8220;collapse key&#8221;.  If a document has an empty collapse key, it will never be
+collapsed, but otherwise documents with the same collapse key will be collapsed
+together.</p>
+<p>Currently the collapse key is taken from a value slot you specify (via the
+method <tt class="docutils literal"><span class="pre">Enquire::set_collapse_key()</span></tt>), but in the future you should be able
+to build collapse keys dynamically using <tt class="docutils literal"><span class="pre">Xapian::KeyMaker</span></tt> as you already
+can for sort keys.</p>
+<div class="section" id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
+<p>The collapsing is performed during the match process, so is pretty efficient.
+In particular, this approach is much better than generating a larger MSet and
+post-processing it.</p>
+<p>However, if the collapsing eliminates a lot of documents then the collapsed
+search will typically take rather longer than the uncollapsed search because
+the matcher has to consider many more potential matches.</p>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<p>To enable collapsing, call the method <tt class="docutils literal"><span class="pre">Enquire::set_collapse_key</span></tt> with the
+value slot, and optionally the number of matches with each collapse key to keep
+(this defaults to 1 if not specified), e.g.:</p>
+<div class="highlight-python"><pre>// Collapse on value slot 4, leaving at most 2 documents with each
+// collapse key.
+enquire.set_collapse_key(4, 2);</pre>
+</div>
+<p>Once you have the <tt class="docutils literal"><span class="pre">MSet</span></tt> object, you can read the collapse key for each
+match with <tt class="docutils literal"><span class="pre">MSetIterator::get_collapse_key()</span></tt>, and also the &#8220;collapse count&#8221;
+with <tt class="docutils literal"><span class="pre">MSetIterator::get_collapse_count()</span></tt>.  The latter is a lower bound on
+the number of documents with the same collapse key which collapsing eliminated.</p>
+<p>Beware that if you have a percentage cutoff active, then the collapse count
+will (at least in the current implementation) will always be either 0 or 1
+as it is hard to tell if the collapsed documents would have failed the cutoff.</p>
+</div>
+<div class="section" id="statistics">
+<h2>Statistics<a class="headerlink" href="#statistics" title="Permalink to this headline">¶</a></h2>
+<p>As well as the usual bounds and estimate of the &#8220;full&#8221; MSet size (i.e. the
+size if you&#8217;d asked for enough matches to get them all), the matcher also
+calculates bounds and an estimate for what the MSet size would be if collapsing
+had not been used - you can obtain these using these methods:</p>
+<div class="highlight-python"><pre>Xapian::doccount get_uncollapsed_matches_lower_bound() const;
+Xapian::doccount get_uncollapsed_matches_estimated() const;
+Xapian::doccount get_uncollapsed_matches_upper_bound() const;</pre>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Here are some ways this feature can be used:</p>
+<div class="section" id="duplicate-elimination">
+<h3>Duplicate Elimination<a class="headerlink" href="#duplicate-elimination" title="Permalink to this headline">¶</a></h3>
+<p>If your document collection includes some identical documents, it&#8217;s unhelpful
+when these show up in the search results.  Sometimes it is possible to
+eliminate them at index time, but this isn&#8217;t always feasible.</p>
+<p>If you store a checksum (e.g. SHA1 or MD5) of the document contents and store
+this in a document value then you can collapse on this to eliminate such
+duplicates.</p>
+<p>If the document files will be identical, then the checksum can just be of the
+file, but sometimes it makes sense to extract and normalise the text, then
+calculate the checksum of this.</p>
+</div>
+<div class="section" id="restricting-the-number-of-matches-per-source">
+<h3>Restricting the Number of Matches per Source<a class="headerlink" href="#restricting-the-number-of-matches-per-source" title="Permalink to this headline">¶</a></h3>
+<p>It&#8217;s sometimes desirable to avoid one source dominating the results.  For
+example, in a web search application, you might want to show at most three
+matches from any website, in which case you could collapse on the hostname
+with collapse_max set to 3.</p>
+<p>When displaying the results, you can use the collapse count of each match
+to inform the user that there are at least that many other matches for this
+host (unless you are also using a percentage cutoff - see above).  If it is
+non-zero it means you can usefully provide a &#8220;show all documents for host
+&lt;get_collapse_key()&gt;&#8221; button which reruns the search without collapsing and
+with a boolean filter for a prefixed term containing the hostname (though note
+that this may not always give a button when there are collapsed documents
+because the collapse count is a lower bound and may be zero when there are
+collapsed matches with the same key).</p>
+<p>This approach isn&#8217;t just useful for web search - the &#8220;source&#8221; can be defined
+usefully in many applications.  For example, a forum or mailing list search
+could collapse on a topic or thread identifier, an index at the chapter level
+could collapse on a book identifier (such as an ISBN), etc.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Collapsing of Search Results</a><ul>
+<li><a class="reference internal" href="#performance">Performance</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+<li><a class="reference internal" href="#statistics">Statistics</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#duplicate-elimination">Duplicate Elimination</a></li>
+<li><a class="reference internal" href="#restricting-the-number-of-matches-per-source">Restricting the Number of Matches per Source</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sorting.html"
+                        title="previous chapter">Sorting</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="spelling.html"
+                        title="next chapter">Spelling Correction</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howtos/collapsing.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="spelling.html" title="Spelling Correction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sorting.html" title="Sorting"
+             >previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >How To...</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Facets &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" />
+    <link rel="up" title="How To..." href="index.html" />
+    <link rel="next" title="Sorting" href="sorting.html" />
+    <link rel="prev" title="Range queries" href="range_queries.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="sorting.html" title="Sorting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="range_queries.html" title="Range queries"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">How To...</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="facets">
+<h1>Facets<a class="headerlink" href="#facets" title="Permalink to this headline">¶</a></h1>
+<p>Xapian provides functionality which allows you to dynamically generate
+complete lists of values which feature in matching documents. For example,
+colour, manufacturer, size values are good candidates for faceting.</p>
+<p>There are numerous potential uses this can be put to, but a common one is
+to offer the user the ability to narrow down their search by filtering it
+to only include documents with a particular value of a particular category.
+This is often referred to as <cite>faceted search</cite>.</p>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>Faceting works against information stored in document value slots [link to
+value slots] and, when executed, provides a list of the unique values for
+that slot together with a count of the number of times each value occurs.</p>
+<div class="section" id="indexing">
+<h3>Indexing<a class="headerlink" href="#indexing" title="Permalink to this headline">¶</a></h3>
+<p>No additional work is needed to implement faceted searching, except to
+ensure that the values you wish to use in facets are stored as
+document values.</p>
+<p>We use two value slots: 0 contains the collection, and 1
+contains the name of whoever made the object. We know from the
+documentation of the dataset that both from fixed and curated lists,
+so we don&#8217;t have to worry about normalising the values before using
+them as facets. Let&#8217;s run that to build a dataset with document values
+suitable for faceting:</p>
+<div class="highlight-python"><pre>$ ./bin/index_filters.escript ./priv/100-objects-v1-utf8.csv ./priv/test_db/index_filters</pre>
+</div>
+</div>
+<div class="section" id="querying">
+<h3>Querying<a class="headerlink" href="#querying" title="Permalink to this headline">¶</a></h3>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">explain what goes on here, ie why we use a MatchSpy</p>
+</div>
+<p>Faceting information is collected, using <cite>Xapian::ValueCountMatchSpy</cite> object,
+that can be created, calling</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nv">MatchSpyRes</span> <span class="o">=</span> <span class="nn">xapian_match_spy</span><span class="p">:</span><span class="n">value_count</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">SlotNumberOrName</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>This function returns a resource, that collects information during
+a <cite>MatchSet</cite> generation.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nv">MSetParams</span> <span class="o">=</span> <span class="nl">#x_match_set</span><span class="p">{</span>
+<span class="n">enquire</span> <span class="o">=</span> <span class="nv">EnquireRes</span><span class="p">,</span>
+<span class="n">spies</span> <span class="o">=</span> <span class="p">[</span><span class="nv">MatchSpyRes</span><span class="p">]},</span>
+<span class="nv">MSetRes</span> <span class="o">=</span> <span class="nn">xapian_server</span><span class="p">:</span><span class="n">match_set</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">MSetParams</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>A <cite>MatchSpy</cite> resource can be used with <cite>xapian_server:match_set/2</cite> only once.
+Then, you can extract statistics using few functions, defined inside
+the <cite>xapian_term_qlc</cite> module.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nf">value_count_match_spy_table</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">SpyRes</span><span class="p">,</span> <span class="nv">Meta</span><span class="p">).</span>
+<span class="nf">top_value_count_match_spy_table</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">SpyRes</span><span class="p">,</span> <span class="nv">Limit</span><span class="p">,</span> <span class="nv">Meta</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>The first function will give you facets in alphabetical order, not in
+order of frequency. if you want to show the most frequent first you
+should use the second function.</p>
+<p>We use QLC for retrieving collected information. Each unique value is described
+by a record. The record can have only two fields: <cite>value</cite> and <cite>freq</cite>.
+<cite>Meta</cite> describes the format of the record. It can be created, using:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nn">xapian_term_record</span><span class="p">:</span><span class="n">record</span><span class="p">(</span><span class="nv">RecName</span><span class="p">,</span> <span class="nv">RecFields</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>For example:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="c">%% On the top of the file</span>
+<span class="p">-</span><span class="ni">record</span><span class="p">(</span><span class="nl">spy_term</span><span class="p">,</span> <span class="p">{</span><span class="n">value</span> <span class="p">::</span> <span class="nn">unicode</span><span class="p">:</span><span class="n">unicode_binary</span><span class="p">(),</span>
+                    <span class="n">freq</span> <span class="p">::</span> <span class="n">non_neg_integer</span><span class="p">()}).</span>
+
+<span class="c">%% Inside the function</span>
+<span class="nv">Meta</span> <span class="o">=</span> <span class="nn">xapian_term_record</span><span class="p">:</span><span class="n">record</span><span class="p">(</span><span class="n">spy_term</span><span class="p">,</span>
+        <span class="n">record_info</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">spy_term</span><span class="p">)).</span>
+</pre></div>
+</div>
+<p>In the example, we&#8217;re faceting on value slot 1, which is the object maker.
+After you get the MSet, you can ask the spy for the facets it found,
+including the frequency. Note that although we&#8217;re generally only
+showing ten matches, we use a field of <cite>#x_match_spy{}</cite> called
+<cite>check_at_least</cite>, so that the entire dataset is considered and the facet
+frequencies are correct. See <a class="reference internal" href="#limitations">Limitations</a> for some discussion of the
+implications of this. Here&#8217;s the output:</p>
+<div class="highlight-python"><pre>./bin/search_facets.escript ./priv/test_db/facets clock
+1: docid=44 Two-dial clock by the Self-Winding Clock Co; as used on the
+2: docid=96 Clock with Hipp pendulum (an electric driven clock with Hipp
+3: docid=12 Assembled and unassembled EXA electric clock kit
+4: docid=98 'Pond' electric clock movement (no dial)
+5: docid=83 Harrison's eight-day wooden clock movement, 1715.
+6: docid=5 "Ever Ready" ceiling clock
+7: docid=39 Electric clock of the Bain type
+8: docid=61 Van der Plancke master clock
+9: docid=64 Morse electrical clock, dial mechanism
+10: docid=52 Reconstruction of Dondi's Astronomical Clock, 1974
+Facet: Bain, Alexander; count: 2
+Facet: Bloxam, J. M.; count: 1
+Facet: Braun (maker); count: 1
+Facet: British Horo-Electric Ltd. (maker); count: 1
+Facet: EXA; count: 1
+Facet: Ever Ready Co. (maker); count: 2
+Facet: Ferranti Ltd.; count: 1
+Facet: Harrison, John (maker); count: 1
+Facet: Hipp, M.; count: 1
+Facet: La Prision Cie; count: 1
+Facet: Lund, J.; count: 1
+Facet: Morse, J. S.; count: 1
+Facet: Self Winding Clock Company; count: 1
+Facet: Self-Winding Clock Co. (maker); count: 1
+Facet: Synchronome Co. Ltd. (maker); count: 2
+Facet: Thwaites and Reed Ltd.; count: 1
+Facet: Thwaites and Reed Ltd. (maker); count: 1
+Facet: Viviani, Vincenzo; count: 1
+Facet: Whitefriars Glass Ltd. (maker); count: 1</pre>
+</div>
+<p>If you want to work with multiple facets, you can register multiple
+passing a list of spies. Although each additional one will have some
+performance impact.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nv">MSetParams</span> <span class="o">=</span> <span class="nl">#x_match_set</span><span class="p">{</span>
+    <span class="n">enquire</span> <span class="o">=</span> <span class="nv">EnquireRes</span><span class="p">,</span>
+    <span class="n">spies</span> <span class="o">=</span> <span class="p">[</span><span class="nv">MatchSpyRes1</span><span class="p">,</span> <span class="nv">MatchSpyRes2</span><span class="p">]}.</span>
+</pre></div>
+</div>
+<p>Finally, the resource should be deallocated.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nn">xapian_server</span><span class="p">:</span><span class="n">release_resource</span><span class="p">(</span><span class="nv">MatchSpyRes</span><span class="p">).</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="restricting-by-facets">
+<h3>Restricting by Facets<a class="headerlink" href="#restricting-by-facets" title="Permalink to this headline">¶</a></h3>
+<p>If you&#8217;re using the facets to offer the user choices for narrowing down
+their search results, you then need to be able to apply a suitable filter.</p>
+<p>For a single value, you could use <cite>#x_query_value{slot = Slot, value = Value}</cite>,
+or <cite>Xapian::MatchDecider</cite>, but it&#8217;s probably most
+efficient to also index the categories as suitably prefixed boolean terms
+and use those for filtering.</p>
+</div>
+</div>
+<div class="section" id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Permalink to this headline">¶</a></h2>
+<p>The accuracy of Xapian&#8217;s faceting capability is determined by the number
+of records that are examined by Xapian whilst it is searching. You can
+control this number by specifying the <cite>#x_match_set.checkatleast</cite> value;
+however it is important to be aware that increasing this number may have an
+effect on overall query performance.</p>
+</div>
+<div class="section" id="in-development">
+<h2>In Development<a class="headerlink" href="#in-development" title="Permalink to this headline">¶</a></h2>
+<p>Some additional features currently in development may benefit users of
+facets. These are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Multiple values in slots: this will allow you to have a single value slot
+(e.g. colour) which contains multiple values (e.g. red, blue).  This will
+also allow you to create a facet by colour which is aware of these
+multiple values, giving counts for both red and blue.</li>
+<li>Bucketing: this provides a means to group together numeric facets, so that
+a single facet can contain a range of values (e.g. price ranges).</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Facets</a><ul>
+<li><a class="reference internal" href="#implementation">Implementation</a><ul>
+<li><a class="reference internal" href="#indexing">Indexing</a></li>
+<li><a class="reference internal" href="#querying">Querying</a></li>
+<li><a class="reference internal" href="#restricting-by-facets">Restricting by Facets</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#limitations">Limitations</a></li>
+<li><a class="reference internal" href="#in-development">In Development</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="range_queries.html"
+                        title="previous chapter">Range queries</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sorting.html"
+                        title="next chapter">Sorting</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howtos/facets.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="sorting.html" title="Sorting"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="range_queries.html" title="Range queries"
+             >previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >How To...</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

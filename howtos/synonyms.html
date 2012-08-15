@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Synonyms &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" />
+    <link rel="up" title="How To..." href="index.html" />
+    <link rel="next" title="Improving your results" href="improve_results.html" />
+    <link rel="prev" title="Spelling Correction" href="spelling.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="improve_results.html" title="Improving your results"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spelling.html" title="Spelling Correction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">How To...</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="synonyms">
+<h1>Synonyms<a class="headerlink" href="#synonyms" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Xapian provides support for storing a synonym dictionary, or thesaurus.  This
+can be used by the Xapian::QueryParser class to expand terms in user query
+strings, either automatically, or when requested by the user with an explicit
+synonym operator (<tt class="docutils literal"><span class="pre">~</span></tt>).</p>
+<p>Note that Xapian doesn&#8217;t offer automated generation of the synonym dictionary.</p>
+</div>
+<div class="section" id="model">
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h2>
+<p>The model for the synonym dictionary is that a term or group of consecutive
+terms can have one or more synonym terms.  A group of consecutive terms is
+specified in the dictionary by simply joining them with a single space between
+each one.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Discuss interactions with stemming (ie, should the input and/or
+output values in the synonym table be stemmed).</p>
+</div>
+</div>
+<div class="section" id="adding-synonyms">
+<h2>Adding Synonyms<a class="headerlink" href="#adding-synonyms" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Document this!</p>
+</div>
+</div>
+<div class="section" id="queryparser-integration">
+<h2>QueryParser Integration<a class="headerlink" href="#queryparser-integration" title="Permalink to this headline">¶</a></h2>
+<p>In order for any of the synonym features of the QueryParser to work, you must
+call <tt class="docutils literal"><span class="pre">QueryParser::set_database()</span></tt> to specify the database to use.</p>
+<p>If <tt class="docutils literal"><span class="pre">FLAG_SYNONYM</span></tt> is passed to <tt class="docutils literal"><span class="pre">QueryParser::parse_query()</span></tt> then the
+QueryParser will recognise <tt class="docutils literal"><span class="pre">~</span></tt> in front of a term as indicating a request for
+synonym expansion.  If <tt class="docutils literal"><span class="pre">FLAG_LOVEHATE</span></tt> is also specified, you can use <tt class="docutils literal"><span class="pre">+</span></tt>
+and <tt class="docutils literal"><span class="pre">-</span></tt> before the <tt class="docutils literal"><span class="pre">~</span></tt> to indicate that you love or hate the synonym
+expanded expression.</p>
+<p>A synonym-expanded term becomes the term itself OR-ed with any listed synonyms,
+so <tt class="docutils literal"><span class="pre">~truck</span></tt> might expand to <tt class="docutils literal"><span class="pre">truck</span> <span class="pre">OR</span> <span class="pre">lorry</span> <span class="pre">OR</span> <span class="pre">van</span></tt>.  A group of terms is
+handled in much the same way.</p>
+<p>If a term to be synonym expanded will be stemmed by the QueryParser, then
+synonyms will be checked for the unstemmed form first, and then for the stemmed
+form, so you can provide different synonyms for particular unstemmed forms
+if you want to.</p>
+<p>If <tt class="docutils literal"><span class="pre">FLAG_AUTO_SYNONYMS</span></tt> is passed to <tt class="docutils literal"><span class="pre">QueryParser::parse_query()</span></tt> then the
+QueryParser will automatically expand any term which has synonyms, unless the
+term is in a phrase or similar.</p>
+<p>If <tt class="docutils literal"><span class="pre">FLAG_AUTO_MULTIWORD_SYNONYMS</span></tt> is passed to <tt class="docutils literal"><span class="pre">QueryParser::parse_query()</span></tt>
+then the QueryParser will look at groups of terms separated only by whitespace
+and try to expand them as term groups.  This is done in a &#8220;greedy&#8221; fashion, so
+the first term which can start a group is expanded first, and the longest group
+starting with that term is expanded.  After expansion, the QueryParser will
+look for further possible expansions starting with the term after the last
+term in the expanded group.</p>
+</div>
+<div class="section" id="op-synonym">
+<h2>OP_SYNONYM<a class="headerlink" href="#op-synonym" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">Query.OP_SYNONYM, and how that relates to synonym expansion.</p>
+</div>
+</div>
+<div class="section" id="current-limitations">
+<h2>Current Limitations<a class="headerlink" href="#current-limitations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="explicit-multi-word-synonyms">
+<h3>Explicit multi-word synonyms<a class="headerlink" href="#explicit-multi-word-synonyms" title="Permalink to this headline">¶</a></h3>
+<p>There ought to be a way to explicitly request expansion of multi-term synonyms,
+probably with the syntax <tt class="docutils literal"><span class="pre">~&quot;stock</span> <span class="pre">market&quot;</span></tt>.  This hasn&#8217;t been implemented
+yet though.</p>
+</div>
+<div class="section" id="backend-support">
+<h3>Backend Support<a class="headerlink" href="#backend-support" title="Permalink to this headline">¶</a></h3>
+<p>Currently synonyms are supported by the chert and brass databases.  They work
+with a single database or multiple databases (use Database::add_database() as
+usual).  We&#8217;ve no plans to support them for the InMemory backend, but we do
+intend to support them for the remote backend in the future.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Synonyms</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#model">Model</a></li>
+<li><a class="reference internal" href="#adding-synonyms">Adding Synonyms</a></li>
+<li><a class="reference internal" href="#queryparser-integration">QueryParser Integration</a></li>
+<li><a class="reference internal" href="#op-synonym">OP_SYNONYM</a></li>
+<li><a class="reference internal" href="#current-limitations">Current Limitations</a><ul>
+<li><a class="reference internal" href="#explicit-multi-word-synonyms">Explicit multi-word synonyms</a></li>
+<li><a class="reference internal" href="#backend-support">Backend Support</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="spelling.html"
+                        title="previous chapter">Spelling Correction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="improve_results.html"
+                        title="next chapter">Improving your results</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howtos/synonyms.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="improve_results.html" title="Improving your results"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spelling.html" title="Spelling Correction"
+             >previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >How To...</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

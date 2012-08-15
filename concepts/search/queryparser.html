@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Query Parser &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Search concepts" href="index.html" />
+    <link rel="next" title="Ranked matches" href="ranked_matches.html" />
+    <link rel="prev" title="Queries" href="queries.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ranked_matches.html" title="Ranked matches"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="queries.html" title="Queries"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Search concepts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="query-parser">
+<h1>Query Parser<a class="headerlink" href="#query-parser" title="Permalink to this headline">¶</a></h1>
+<p>To make searching databases simpler, Xapian provides a <cite>QueryParser</cite> class
+which converts a human readable query string into a Xapian Query object,
+for example:</p>
+<blockquote>
+<div>apple AND a NEAR word OR &#8220;a phrase&#8221; NOT (too difficult) +eh</div></blockquote>
+<p>The above example shows how some of the basic modifiers are interpreted by
+the QueryParser; the operators it supports follow the operators described
+earlier, for example:</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;apple AND pear&#8217; matches documents where both terms are present</li>
+<li>&#8216;apple OR pear&#8217; matches documents where either term (or both) are
+present</li>
+<li>&#8216;apple NOT pear&#8217; matches documents where apple is present and pear is
+not</li>
+</ul>
+</div></blockquote>
+<div class="section" id="term-generation">
+<h2>Term Generation<a class="headerlink" href="#term-generation" title="Permalink to this headline">¶</a></h2>
+<p>The QueryParser uses an internal process to convert the query string into
+terms.  This is similar to the process used by the TermGenerator, which
+can be used at index time to convert a string into terms.  It is often
+easiest to use QueryParser and TermGenerator on the same database.</p>
+</div>
+<div class="section" id="wildcards">
+<h2>Wildcards<a class="headerlink" href="#wildcards" title="Permalink to this headline">¶</a></h2>
+<p>It is also possible to use wildcards to match any number of trailing
+characters within a term; for example:</p>
+<blockquote>
+<div>&#8216;wild*&#8217; matches wild, wildcard, wildcat, wilderness, etc</div></blockquote>
+<p>This feature is disabled by default; to enable it, see &#8216;Enabling Features&#8217;
+below.</p>
+</div>
+<div class="section" id="bracketed-expressions">
+<h2>Bracketed Expressions<a class="headerlink" href="#bracketed-expressions" title="Permalink to this headline">¶</a></h2>
+<p>When queries contain both OR and AND operators, AND takes precedence.
+To change the precedence of parts of the query, brackets can be used.
+For example, with the query:</p>
+<blockquote>
+<div>apple OR pear AND dessert</div></blockquote>
+<p>The query parser will interpret this query as:</p>
+<blockquote>
+<div>apple OR (pear AND dessert)</div></blockquote>
+<p>So to change the precedence and make the dessert a requirement, you would
+write the query initially as:</p>
+<blockquote>
+<div>(apple OR pear) AND dessert</div></blockquote>
+</div>
+<div class="section" id="default-operator">
+<h2>Default Operator<a class="headerlink" href="#default-operator" title="Permalink to this headline">¶</a></h2>
+<p>When the QueryParser receives a query, it joins together its component
+queries using a <cite>default operator</cite> which defaults to OP_OR but can be
+modified at run time.</p>
+</div>
+<div class="section" id="additional-operators">
+<h2>Additional operators<a class="headerlink" href="#additional-operators" title="Permalink to this headline">¶</a></h2>
+<p>As well as the basic logical operators, QueryParser supports the additional
+operators discussed earlier and introduces some new ones, for example:</p>
+<blockquote>
+<div>apple NEAR dessert
+president &#8220;united states&#8221;
+&#8220;race condition&#8221; -horse
++recipe +apple pie cake dessert</div></blockquote>
+<p>The NEAR and phrase support behaves in the same way as described earlier;
+the new features are the + and - operators, which select documents based on
+the presence or absence of specified terms, for example:</p>
+<blockquote>
+<div>&#8220;race condition&#8221; -horse</div></blockquote>
+<p>Matches all documents with the phrase &#8220;race condition&#8221; but not horse; and:</p>
+<blockquote>
+<div>+recipe +apple pie cake desert</div></blockquote>
+<p>Which matches all documents which have the terms &#8216;recipe&#8217; and &#8216;apple&#8217;; then
+all documents with these terms are weighted according to the weight of the
+additional terms.</p>
+<p>One thing to note is that the behaviour of the +/- operators vary depending
+on the default operator used and the above examples assume that OP_OR is
+used.</p>
+</div>
+<div class="section" id="searching-with-prefixes">
+<h2>Searching with Prefixes<a class="headerlink" href="#searching-with-prefixes" title="Permalink to this headline">¶</a></h2>
+<p>When a database is populated using prefixed terms (for example, title,
+author) it is possible to tell the QueryParser that these fields can be
+searched for using a human-readable prefix; for example:</p>
+<blockquote>
+<div>author:&#8221;william shakespeare&#8221; title:juliet</div></blockquote>
+</div>
+<div class="section" id="ranges">
+<h2>Ranges<a class="headerlink" href="#ranges" title="Permalink to this headline">¶</a></h2>
+<p>The QueryParser also supports range searches on document values, matching
+documents which have values within a given range. There are several types
+of range processors available, but the two discussed here are Date and
+Number, which require that values are serialised as they are indexed.</p>
+<p>To use a range, additional programming is required to tell the QueryParser
+what format a range is specified in and which value is to be searched for
+matches within that range. This then gives rise to the ability to specify
+ranges as:</p>
+<blockquote>
+<div>$10..50
+5..10kg
+01/01/1970..01/03/1970
+size:3..7</div></blockquote>
+<p>When date ranges are configured (as a <cite>DateValueRangeProcessor</cite>), you can
+configure which format dates are to be interpreted as (i.e. month-day-year)
+or otherwise.</p>
+</div>
+<div class="section" id="stop-words">
+<h2>Stop words<a class="headerlink" href="#stop-words" title="Permalink to this headline">¶</a></h2>
+<p>Xapian also supports a <cite>stop word</cite> list, which allows you to specify words
+which should be removed from a query before processing. This stop list can
+be overridden within user search, so stop words can still be searched for
+if desired, for example if a stop word list contained &#8216;the&#8217; and a search
+was for:</p>
+<blockquote>
+<div>+the +document</div></blockquote>
+<p>Then the search would find relevant documents which contained both &#8216;the&#8217;
+and &#8216;document&#8217;.  Also, when searching for phrases, stop words do not apply,
+for example:</p>
+<blockquote>
+<div>&#8220;the green space&#8221; retrieves documents with this exact phrase</div></blockquote>
+</div>
+<div class="section" id="parser-flags">
+<h2>Parser Flags<a class="headerlink" href="#parser-flags" title="Permalink to this headline">¶</a></h2>
+<p>The operation of the QueryParser can be altered through the use of flags,
+combined with the bitwise OR operator; these flags include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>FLAG_BOOLEAN: enables support for AND, OR, etc and bracketed
+expressions</li>
+<li>FLAG_PHRASE: enables support for phrase expressions</li>
+<li>FLAG_LOVEHATE: enables support for <cite>+</cite> and <cite>-</cite> operators</li>
+<li>FLAG_BOOLEAN_ANY_CASE: enables support for lower/mixed case boolean
+operators</li>
+<li>FLAG_WILDCARD: enables support for wildcards</li>
+</ul>
+</div></blockquote>
+<p>By default, the QueryParser enables FLAG_BOOLEAN, FLAG_PHRASE and
+FLAG_LOVEHATE.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Query Parser</a><ul>
+<li><a class="reference internal" href="#term-generation">Term Generation</a></li>
+<li><a class="reference internal" href="#wildcards">Wildcards</a></li>
+<li><a class="reference internal" href="#bracketed-expressions">Bracketed Expressions</a></li>
+<li><a class="reference internal" href="#default-operator">Default Operator</a></li>
+<li><a class="reference internal" href="#additional-operators">Additional operators</a></li>
+<li><a class="reference internal" href="#searching-with-prefixes">Searching with Prefixes</a></li>
+<li><a class="reference internal" href="#ranges">Ranges</a></li>
+<li><a class="reference internal" href="#stop-words">Stop words</a></li>
+<li><a class="reference internal" href="#parser-flags">Parser Flags</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="queries.html"
+                        title="previous chapter">Queries</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ranked_matches.html"
+                        title="next chapter">Ranked matches</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/concepts/search/queryparser.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ranked_matches.html" title="Ranked matches"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="queries.html" title="Queries"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" >Search concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

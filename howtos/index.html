@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How To... &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" />
+    <link rel="next" title="How to filter search results" href="boolean_filters.html" />
+    <link rel="prev" title="Database Modified" href="../practical_example/searching/database_modified.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="boolean_filters.html" title="How to filter search results"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../practical_example/searching/database_modified.html" title="Database Modified"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="how-to">
+<h1>How To...<a class="headerlink" href="#how-to" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="boolean_filters.html">How to filter search results</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="boolean_filters.html#indexing">Indexing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="boolean_filters.html#searching">Searching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="boolean_filters.html#using-the-query-parser">Using the query parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="boolean_filters.html#what-to-supply-to-the-query-parser">What to supply to the query parser</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="range_queries.html">Range queries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="range_queries.html#i-m-only-interested-in-the-1980s">I&#8217;m only interested in the 1980s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="range_queries.html#how-xapian-supports-range-queries">How Xapian supports range queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="range_queries.html#creating-the-document-values">Creating the document values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="range_queries.html#searching-with-ranges">Searching with ranges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="range_queries.html#handling-dates">Handling dates</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="facets.html">Facets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="facets.html#implementation">Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="facets.html#limitations">Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="facets.html#in-development">In Development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sorting.html">Sorting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sorting.html#sorting-by-value">Sorting by Value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sorting.html#generated-sort-keys">Generated Sort Keys</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="collapsing.html">Collapsing of Search Results</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="collapsing.html#performance">Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collapsing.html#api">API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collapsing.html#statistics">Statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collapsing.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spelling.html">Spelling Correction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spelling.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spelling.html#indexing">Indexing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spelling.html#searching">Searching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spelling.html#omega">Omega</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spelling.html#algorithm">Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spelling.html#current-limitations">Current Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spelling.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="synonyms.html">Synonyms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="synonyms.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synonyms.html#model">Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synonyms.html#adding-synonyms">Adding Synonyms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synonyms.html#queryparser-integration">QueryParser Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synonyms.html#op-synonym">OP_SYNONYM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synonyms.html#current-limitations">Current Limitations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improve_results.html">Improving your results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="weighting_scheme.html">How to change how documents are scored</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="weighting_scheme.html#boolweight">BoolWeight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighting_scheme.html#tradweight">TradWeight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighting_scheme.html#bm25weight">BM25Weight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighting_scheme.html#custom-weighting-schemes">Custom Weighting Schemes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="geospatial.html">Geospatial searches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="replication.html">Replication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="replication.html#backend-support">Backend Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="replication.html#setting-up-replicated-databases">Setting up replicated databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="replication.html#limitations">Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="replication.html#alternative-approaches">Alternative approaches</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="query_authorisation.html">Query authorisation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="query_authorisation.html#filtering-results">Filtering results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="query_authorisation.html#putting-authorisation-data-into-the-search-index">Putting authorisation data into the search index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="query_authorisation.html#hybrid-schemes">Hybrid schemes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="query_authorisation.html#timeliness-of-index-authorisation">Timeliness of index authorisation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../practical_example/searching/database_modified.html"
+                        title="previous chapter">Database Modified</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="boolean_filters.html"
+                        title="next chapter">How to filter search results</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howtos/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="boolean_filters.html" title="How to filter search results"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../practical_example/searching/database_modified.html" title="Database Modified"
+             >previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

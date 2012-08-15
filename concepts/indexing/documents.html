@@ -1,0 +1,155 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Documents &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Indexing concepts" href="index.html" />
+    <link rel="next" title="Terms" href="terms.html" />
+    <link rel="prev" title="Databases" href="databases.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="terms.html" title="Terms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="databases.html" title="Databases"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Indexing concepts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="documents">
+<h1>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h1>
+<p>A document in Xapian is simply an item which is returned by a search.  When
+building a new search system, a key thing to decide is what the documents
+in your system are going to be.  There&#8217;s often an obvious choice here, but
+in many cases there are alternatives.  For example, for a search over a
+website, it seems natural to have one document for each page of the site.
+However, you could instead choose to use one document for each paragraph of
+each page, or to group pages together into subjects and have one document
+for each subject.</p>
+<p>Documents are identified in a database by a unique positive integer id,
+known as the <cite>document ID</cite>.  Currently this is a 32 bit quantity.</p>
+<p>Documents have three components: <cite>data</cite>, <cite>terms</cite> and <cite>values</cite>.  We&#8217;ll
+discuss terms and data first - values are useful for some more advanced
+search types.</p>
+<div class="section" id="document-data">
+<h2>Document Data<a class="headerlink" href="#document-data" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>document data</cite> is an arbitrary binary blob of data associated with the
+document.  Xapian treats this as completely opaque, and does nothing with
+this data other than storing it in the database (compressed with zlib if it
+is compressible) and returning it when requested.</p>
+<p>It can be used to hold a reference to the document elsewhere (such as the
+primary key in an external database table), or could be used to store the
+full text of the document.</p>
+<p>Generally, the best thing to do with the document data is to store any
+information you need in order to display the resulting document to the user
+(or to whatever process consumes the results of searches).  Xapian doesn&#8217;t
+enforce a serialisation scheme for putting structured information into the
+document data: depending on your application, you might want to implement a
+simple scheme using newlines to separate values, use JSON or XML
+serialisation, or use some other method of pickling data.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Documents</a><ul>
+<li><a class="reference internal" href="#document-data">Document Data</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="databases.html"
+                        title="previous chapter">Databases</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="terms.html"
+                        title="next chapter">Terms</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/concepts/indexing/documents.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="terms.html" title="Terms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="databases.html" title="Databases"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" >Indexing concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

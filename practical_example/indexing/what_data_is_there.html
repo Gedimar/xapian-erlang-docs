@@ -1,0 +1,147 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>What data is there? &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Indexing" href="index.html" />
+    <link rel="next" title="What do people want to search for?" href="what_do_people_want_to_search_for.html" />
+    <link rel="prev" title="Building a museum catalogue" href="building_a_museum_catalogue.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="what_do_people_want_to_search_for.html" title="What do people want to search for?"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="building_a_museum_catalogue.html" title="Building a museum catalogue"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Indexing</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="what-data-is-there">
+<h1>What data is there?<a class="headerlink" href="#what-data-is-there" title="Permalink to this headline">¶</a></h1>
+<p>Each row in the CSV file is an object from the catalogue, and has a number
+of fields. There are:</p>
+<dl class="docutils">
+<dt>id_NUMBER:</dt>
+<dd>a unique identifier</dd>
+<dt>ITEM_NAME:</dt>
+<dd>a simple name, often from an established thesaurus</dd>
+<dt>TITLE:</dt>
+<dd>a short caption</dd>
+<dt>MAKER:</dt>
+<dd>the name of who made the object</dd>
+<dt>DATE_MADE:</dt>
+<dd>when the object was made, which may be a range, approximate date or
+unknown</dd>
+<dt>PLACE_MADE:</dt>
+<dd>where the object was made</dd>
+<dt>MATERIALS:</dt>
+<dd>what the object is made of</dd>
+<dt>MEASUREMENTS:</dt>
+<dd>the dimensions of the object</dd>
+<dt>DESCRIPTION</dt>
+<dd>a description of the object</dd>
+<dt>COLLECTION:</dt>
+<dd>the collection the object came from (eg: Science Museum - Space
+Technology)</dd>
+</dl>
+<p>There are obviously a number of different types of data here: free text,
+identifiers, dates, places (which could be geocoded to geo coordinates),
+and dimensions. Additionally, COLLECTION and MAKER both come from a list of
+possible values.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="building_a_museum_catalogue.html"
+                        title="previous chapter">Building a museum catalogue</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="what_do_people_want_to_search_for.html"
+                        title="next chapter">What do people want to search for?</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/practical_example/indexing/what_data_is_there.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="what_do_people_want_to_search_for.html" title="What do people want to search for?"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="building_a_museum_catalogue.html" title="Building a museum catalogue"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" >Indexing</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

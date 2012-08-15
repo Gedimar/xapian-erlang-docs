@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to filter search results &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" />
+    <link rel="up" title="How To..." href="index.html" />
+    <link rel="next" title="Range queries" href="range_queries.html" />
+    <link rel="prev" title="How To..." href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="range_queries.html" title="Range queries"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="How To..."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">How To...</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="how-to-filter-search-results">
+<h1>How to filter search results<a class="headerlink" href="#how-to-filter-search-results" title="Permalink to this headline">¶</a></h1>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">point out that lowercasing by TermGenerator or similar will</p>
+</div>
+<p>In our earlier discussion of building an index of museum catalog data, we
+showed how to index text from the title and description fields with
+separate prefixes, allowing searches to be performed across just one of
+those fields.  This is a simple type of fielded search, but often some
+fields in a document won&#8217;t contain unconstrained text; for example, they
+may contain only a few specific values or identifiers.  We often wish to
+use such fields to restrict the results to only those matching a particular
+value, rather than treating them as unstructured &#8220;free text&#8221;.</p>
+<p>In the museum catalog, the <tt class="docutils literal"><span class="pre">MATERIALS</span></tt> field is an example of a field
+which contains text from a restricted vocabulary.  This text can be thought
+of as an identifier, rather than text which needs to be parsed.  In fact,
+for many records this field contains several identifiers for materials in
+the object, separated by semicolons.</p>
+<div class="section" id="indexing">
+<h2>Indexing<a class="headerlink" href="#indexing" title="Permalink to this headline">¶</a></h2>
+<p>When indexing such fields, we don&#8217;t want to perform stemming, though we may
+well want to convert the identifiers to lowercase if case is not significant.
+We also don&#8217;t expect the number of times a term from these fields occurs in a
+document to be significant (we only expect it to occur 0 or 1 times), so we
+don&#8217;t need to store &#8220;within document frequency&#8221; information.  A field like
+this, which we&#8217;re using to restrict the results returned from a search rather
+than as part of the weighted search, is referred to as a <cite>boolean term</cite>.</p>
+<p>To add a boolean term <cite>Term</cite>, you should set the field <cite>frequency</cite> of the
+<cite>#x_term</cite> record to zero:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nl">#x_term</span><span class="p">{</span><span class="n">frequency</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="nv">Term</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>If we check the resulting index with delve, we will see that documents for
+which there was a value in the <tt class="docutils literal"><span class="pre">MATERIALS</span></tt> field now contain terms with the
+<tt class="docutils literal"><span class="pre">XM</span></tt> prefix (output snipped to show the relevant lines):</p>
+<div class="highlight-python"><pre>$ delve -r 3 -1 priv/test_db/filters | grep "ZX"
+ZXDabbot
+ZXDb
+ZXDglass
+ZXDhorn
+ZXDin
+ZXDlog
+ZXDmount
+ZXDno
+ZXDsec
+ZXDship
+ZXDtype
+ZXDwooden</pre>
+</div>
+</div>
+<div class="section" id="searching">
+<h2>Searching<a class="headerlink" href="#searching" title="Permalink to this headline">¶</a></h2>
+<p>Suppose that the interface we want to provide allows users to type a free text
+search into one form input, but also has a set of checkboxes for different
+possible materials.  We want to return documents which match the text search
+entered, but only if they also contain one of the materials for which the
+checkbox is selected.</p>
+<p>To build a query which performs this task, we can take the Query object
+returned by the query parser, and combine it with a manually built Query
+representing the checkboxes which are selected, using the <tt class="docutils literal"><span class="pre">'FILTER'</span></tt>
+operator.  If multiple checkboxes are selected, we need to combine the Query
+objects for each checkbox with an <tt class="docutils literal"><span class="pre">'OR'</span></tt> operator.</p>
+<p>An arbitrarily complex Query tree can be built using queries returned from the
+QueryParser and manually constructed Query objects, which allows very flexible
+filtering of the results from parsed queries.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nl">#x_query</span><span class="p">{</span><span class="n">op</span> <span class="o">=</span> <span class="n">&#39;FILTER&#39;</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nv">MainQuery</span><span class="p">,</span> <span class="nv">FilterQuery</span><span class="p">]}.</span>
+</pre></div>
+</div>
+<p>A full copy of the this updated search code is available in
+<tt class="docutils literal"><span class="pre">bin/search_filters.escript</span></tt>.  With this, we could perform a search for
+documents matching &#8220;clock&#8221;, and filter the results to return only those with a
+value of <tt class="docutils literal"><span class="pre">&quot;steel</span> <span class="pre">(metal)&quot;</span></tt> as one of the semicolon separated values in the
+materials field:</p>
+<div class="highlight-python"><pre>$ ./bin/search_filters.escript priv/test_db/filters clock 'steel (metal)'
+1: #012 Assembled and unassembled EXA electric clock kit
+2: #098 'Pond' electric clock movement (no dial)
+3: #052 Reconstruction of Dondi's Astronomical Clock, 1974
+4: #059 Electrically operated clock controller
+5: #024 Regulator Clock with Gravity Escapement
+6: #097 Bain's subsidiary electric clock
+7: #009 Copy  of a Dwerrihouse skeleton clock with coup-perdu escape
+8: #091 Pendulum clock designed by Galileo in 1642 and made by his son in
+   1649, model.</pre>
+</div>
+</div>
+<div class="section" id="using-the-query-parser">
+<h2>Using the query parser<a class="headerlink" href="#using-the-query-parser" title="Permalink to this headline">¶</a></h2>
+<p>The previous section shows how to write code to filter the results of a query
+programmatically.  This can be very flexible, but sometimes you want users to be
+able to specify filters themselves, within the text query that they enter.</p>
+<p>You can do this filling the <tt class="docutils literal"><span class="pre">#x_query_parser.prefixes</span></tt> field with the list of
+<tt class="docutils literal"><span class="pre">#x_prefix_name</span></tt> records. Set <tt class="docutils literal"><span class="pre">is_boolean</span></tt> field to <tt class="docutils literal"><span class="pre">true</span></tt> for using of
+these terms as a filter.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nv">XM</span> <span class="o">=</span> <span class="nl">#x_prefix_name</span><span class="p">{</span><span class="n">name</span> <span class="o">=</span> <span class="n">material</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;XM&quot;</span><span class="p">,</span> <span class="nb">is_boolean</span><span class="o">=</span><span class="n">true</span><span class="p">},</span>
+<span class="nl">#x_query_parser</span><span class="p">{</span><span class="n">prefixes</span><span class="o">=</span><span class="p">[</span><span class="nv">XM</span><span class="p">]}.</span>
+</pre></div>
+</div>
+<p>You can also pass the <tt class="docutils literal"><span class="pre">#x_prefix_name</span></tt> record as a parameter of the
+<tt class="docutils literal"><span class="pre">xapian_server:open/2</span></tt> function.</p>
+<p>This lets you tell the query parser about a field to use for filtering, and the
+prefix that terms have been stored in for that term.  There is a modified
+version of our script here: <tt class="docutils literal"><span class="pre">bin/search_filters2.escript</span></tt>.</p>
+<p>Users can then perform a filtered search by preceding a word or phrase with
+&#8220;material:&#8221;, similar to the syntax supported for this sort of thing by many web
+search engines:</p>
+<div class="highlight-python"><pre>$ ./bin/search_filters2.escript priv/test_db/filters 'clock material:"steel (metal)"'
+1: #012 Assembled and unassembled EXA electric clock kit
+2: #098 'Pond' electric clock movement (no dial)
+3: #052 Reconstruction of Dondi's Astronomical Clock, 1974
+4: #059 Electrically operated clock controller
+5: #024 Regulator Clock with Gravity Escapement
+6: #097 Bain's subsidiary electric clock
+7: #009 Copy  of a Dwerrihouse skeleton clock with coup-perdu escape
+8: #091 Pendulum clock designed by Galileo in 1642 and made by his son in
+   1649, model.</pre>
+</div>
+</div>
+<div class="section" id="what-to-supply-to-the-query-parser">
+<h2>What to supply to the query parser<a class="headerlink" href="#what-to-supply-to-the-query-parser" title="Permalink to this headline">¶</a></h2>
+<p>Often, developers seem to be tempted to apply filters to a query by modifying
+the query supplied by a user (eg, by adding things like <tt class="docutils literal"><span class="pre">material:steel</span></tt> to
+the end of it).  This is generally a bad idea, because the query parser
+contains various heuristics to handle input from users; it is very hard to
+modify the input to a query parser to reliably add a filter to the parsed
+query.</p>
+<p>The rule is that the query parser should be supplied with direct user input,
+and if you want to apply extra filters to the query, you should apply them to
+the output of the query parser.</p>
+<p>In later sections, we&#8217;ll see how to tell the query parser about other types of
+searches that users might enter (for example, range searches).  In each of
+these cases, it is also possible to perform such searches and restrictions
+without using the query parser; the query parser just allows the user of the
+search system to perform such restrictions in the query string.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">How to filter search results</a><ul>
+<li><a class="reference internal" href="#indexing">Indexing</a></li>
+<li><a class="reference internal" href="#searching">Searching</a></li>
+<li><a class="reference internal" href="#using-the-query-parser">Using the query parser</a></li>
+<li><a class="reference internal" href="#what-to-supply-to-the-query-parser">What to supply to the query parser</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">How To...</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="range_queries.html"
+                        title="next chapter">Range queries</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howtos/boolean_filters.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="range_queries.html" title="Range queries"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="How To..."
+             >previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >How To...</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

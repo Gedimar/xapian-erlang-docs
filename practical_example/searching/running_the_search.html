@@ -1,0 +1,150 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Running a Search &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Searching" href="index.html" />
+    <link rel="next" title="Searching separate fields" href="prefix.html" />
+    <link rel="prev" title="Building the search" href="building.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="prefix.html" title="Searching separate fields"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="building.html" title="Building the search"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Searching</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="running-a-search">
+<h1>Running a Search<a class="headerlink" href="#running-a-search" title="Permalink to this headline">¶</a></h1>
+<p>To search the database we&#8217;re built, you just run our simple search engine:</p>
+<div class="highlight-python"><pre>$ python code/python/search1.py db watch
+1: #004 Watch with Chinese duplex escapement
+2: #018 Solar/Sidereal verge watch with epicyclic maintaining power
+3: #013 Watch timer by P
+4: #033 A device by Favag of Neuchatel which enables a stop watch to
+5: #015 Ingersoll "Dan Dare" automaton pocket watch with pin-pallet
+6: #036 Universal 'Tri-Compax' chronographic wrist watch
+7: #046 Model by Dent of mechanism for setting hands and winding up
+INFO:xapian.search:'watch'[0:10] = 4 18 13 33 15 36 46</pre>
+</div>
+<p>These results show that 7 documents match our search for the term
+&#8216;watch&#8217;, providing the document IDs (e.g. #004) and title for each.
+If you want to search for multiple words, just chain them together on
+the command line:</p>
+<div class="highlight-python"><pre>$ python code/python/search1.py db Dent watch
+1: #046 Model by Dent of mechanism for setting hands and winding up
+2: #004 Watch with Chinese duplex escapement
+3: #018 Solar/Sidereal verge watch with epicyclic maintaining power
+4: #013 Watch timer by P
+5: #094 Model of a Lever Escapement , 1850-1883
+6: #093 Model of Graham's Cylinder Escapement, 1850-1883
+7: #033 A device by Favag of Neuchatel which enables a stop watch to
+8: #015 Ingersoll "Dan Dare" automaton pocket watch with pin-pallet
+9: #086 Model representing Earnshaw's detent chronometer escapement, 1950-1883
+10: #036 Universal 'Tri-Compax' chronographic wrist watch
+INFO:xapian.search:'Dent watch'[0:10] = 46 4 18 13 94 93 33 15 86 36</pre>
+</div>
+<p>You&#8217;ll notice that all of the results from the first time come back
+the second time also, with additional ones (the match &#8216;Dent&#8217; but not
+&#8216;watch&#8217;), because by default QueryParser will use the OR operator to
+combine the different search terms. Also, because #046 contains both
+&#8216;Dent&#8217; and &#8216;watch&#8217;, it now ranks highest of all the matches.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="building.html"
+                        title="previous chapter">Building the search</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prefix.html"
+                        title="next chapter">Searching separate fields</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/practical_example/searching/running_the_search.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="prefix.html" title="Searching separate fields"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="building.html" title="Building the search"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" >Searching</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

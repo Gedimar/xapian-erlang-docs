@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Range queries &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" />
+    <link rel="up" title="How To..." href="index.html" />
+    <link rel="next" title="Facets" href="facets.html" />
+    <link rel="prev" title="How to filter search results" href="boolean_filters.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="facets.html" title="Facets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="boolean_filters.html" title="How to filter search results"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">How To...</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="range-queries">
+<h1>Range queries<a class="headerlink" href="#range-queries" title="Permalink to this headline">¶</a></h1>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">check valueranges.rst to see if anything else needs moving across</p>
+</div>
+<div class="section" id="i-m-only-interested-in-the-1980s">
+<h2>I&#8217;m only interested in the 1980s<a class="headerlink" href="#i-m-only-interested-in-the-1980s" title="Permalink to this headline">¶</a></h2>
+<p>In the museums dataset we used in our earlier examples, there is a
+field <cite>DATE_MADE</cite> that tells us when the object in question was made,
+so one of the natural things people might want to do is to only search
+for objects made in a particular time period. Suppose we want to
+extend our original system to allow that, we&#8217;re going to have to do a
+number of things.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Parse the field from the data set to turn it into something consistent;
+at the moment it includes years, year ranges (&#8220;1671-1700&#8221;), approximate
+years (&#8220;c. 1936&#8221;) and commentary (&#8220;patented 1885&#8221;, or &#8220;1642-1649
+(original); 1883 (model)&#8221;). Additionally, some records have no
+information about when the object was made.</li>
+<li>Store that information in the Xapian database.</li>
+<li>Provide a way during search of specifying a date range to constrain to.</li>
+</ol>
+</div></blockquote>
+<p>If we look through the other fields in the data set, there are more
+that could be useful for range queries: we could extract the longest
+dimension from <cite>MEASUREMENTS</cite> to enable people to restrict to only
+very large or very small objects, for instance.</p>
+<p>We&#8217;ll see how to perform range searches across both those dimensions,
+and then we&#8217;ll look at how to cope with full dates rather than just
+years.</p>
+</div>
+<div class="section" id="how-xapian-supports-range-queries">
+<h2>How Xapian supports range queries<a class="headerlink" href="#how-xapian-supports-range-queries" title="Permalink to this headline">¶</a></h2>
+<p>If you think back to when we introduced the query concepts behind
+Xapian, you&#8217;ll remember that one group of query operators is
+responsible for handling <em>value ranges</em>: <cite>VALUE LE</cite>, <cite>VALUE GE</cite>
+and <cite>VALUE RANGE</cite>. So we&#8217;ll be tackling range queries by using
+document values, and constructing queries using these operators to
+restrict matches suitably.</p>
+<p>Since we want to expose this functionality generally to users, we want
+them to be able to type in a query that will include one or more range
+restrictions; the QueryParser contains support for doing this, using
+<em>value range processors</em>, subclasses of <cite>ValueRangeProcessor</cite>. Xapian
+comes with some standard ones itself, or you can write your own.</p>
+<p>Since document values are stored as strings in Xapian, and the
+operators provided perform string comparisons, we need a way of
+converting numbers to strings to store them. For this, Xapian provides
+a pair of utility functions: <cite>sortable_serialise</cite> and
+<cite>sortable_unserialise</cite>, which convert between floating point numbers
+(strictly, each works with a <cite>double</cite>) and a string that will sort in
+the same way and so can be compared easily.</p>
+<p>You can fill <cite>#x_value_name.type</cite> with the <cite>float</cite> value and pass this record
+to <cite>xapian_server:open/2</cite> as a parameter.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nl">#x_value_name</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">admitted_year</span><span class="p">,</span> <span class="n">type</span> <span class="o">=</span> <span class="nb">float</span><span class="p">}.</span>
+</pre></div>
+</div>
+<p>After this, serializition will be done automaticly.</p>
+</div>
+<div class="section" id="creating-the-document-values">
+<h2>Creating the document values<a class="headerlink" href="#creating-the-document-values" title="Permalink to this headline">¶</a></h2>
+<p>We need a new version of our indexer. This one is
+<cite>bin/index_ranges.escript</cite>, and creates document values from both
+<cite>MEASUREMENTS</cite> and <cite>DATE_MADE</cite>. We&#8217;ll put the largest dimension in
+value slot 0 (fortunately the data is stored in millimetres and
+kilograms, so we can cheat a little and assume that dimensions will
+always be larger than weights), and a year taken from <cite>DATE_MADE</cite> into
+value slot 1 (we choose the first year we can parse, since it can
+contain such a variety of date formats).</p>
+<p>This command reads the data file and fills the database:</p>
+<div class="highlight-python"><pre>$ ./bin/index_ranges.escript ./priv/100-objects-v1-utf8.csv ./priv/test_db/ranges</pre>
+</div>
+<p>We can check this has created document values using <cite>delve</cite>:</p>
+<div class="highlight-python"><pre>$ delve -V0 ./priv/test_db/ranges
+Value 0 for each document: 5:?? 10:?F 11:?? 12:?P 15:? 19:?t 20:?? 21:? 24:?: 25:?? 26:?? 27:?X 29:?D 30: 31:?@ 33:?` 34:?0 35:?? 36:? 37:?? 38:?( 39:?T 42:?2 45:?@ 46:?P 50:?? 51:?P 52:̡ 54:è 55:?? 56:?P 59:?` 61:?( 62:?@ 64:?? 66:?? 67:?` 68:?D33333@ 69:? 70:?? 71:˨ 72:? 73:??fffff? 74:??fffff? 75:?$?????? 76:¿33333@ 77:?&gt;33333@ 78:?? 79:? 80:?P 81:?@ 84:?? 86:?~ 87:?? 88:?(?????? 89:??33333@ 90:??33333@ 91:?| 93:?( 94:?` 97:?? 98:?h 100:? 101:?V 102:??</pre>
+</div>
+<p>All the &#8216;?&#8217; characters are because <cite>delve</cite> doesn&#8217;t know to run
+<cite>sortable_unserialise</cite> to turn the strings back into numbers.</p>
+</div>
+<div class="section" id="searching-with-ranges">
+<h2>Searching with ranges<a class="headerlink" href="#searching-with-ranges" title="Permalink to this headline">¶</a></h2>
+<p>All we need to do once we&#8217;ve got the document values in place is to
+tell the QueryParser about them. The simplest value range processor is
+<cite>StringValueRangeProcessor</cite>, but here we need two
+<cite>NumberValueRangeProcessor</cite> instances.</p>
+<p>To distinguish between the two different ranges, we&#8217;ll require that
+dimensions must be specified with the suffix &#8216;mm&#8217;, but years are just
+numbers. For this to work, we have to tell QueryParser about the value
+range with a suffix first:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nv">Procs</span> <span class="o">=</span> <span class="p">[</span><span class="nn">xapian_resource</span><span class="p">:</span><span class="n">number_value_range_processor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;mm&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+        <span class="p">,</span><span class="nn">xapian_resource</span><span class="p">:</span><span class="n">number_value_range_processor</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">],</span>
+<span class="nv">Query</span> <span class="o">=</span> <span class="nl">#x_query_string</span><span class="p">{</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nv">QueryStr</span><span class="p">,</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="nl">#x_query_parser</span><span class="p">{</span><span class="n">value_range_processors</span> <span class="o">=</span> <span class="nv">Procs</span><span class="p">}}.</span>
+</pre></div>
+</div>
+<p>We use a <cite>xapian_resource:number_value_range_processor/X</cite> function for creating
+a resource constructor of the <cite>NumberValueRangeProcessor</cite> object.</p>
+<p>The first call has a final parameter of <cite>suffix</cite> (or <cite>false</cite>) to say that
+&#8216;mm&#8217; is a suffix (the default is for it to be a prefix). When using the empty
+string, as in the second call, it doesn&#8217;t matter whether you say it&#8217;s
+a suffix or prefix, so it&#8217;s convenient to skip that parameter.</p>
+<p>This is implemented in <cite>bin/search_ranges.escript</cite>, which also
+modifies the output to show the measurements and date made fields as
+well as the title.</p>
+<p>We can now restrict across dimensions using queries like &#8216;..50mm&#8217;
+(everything at most 50mm in its longest dimension), and across years
+using &#8216;1980..1989&#8217;:</p>
+<div class="highlight-python"><pre>$ ./bin/search_ranges.escript priv/test_db/ranges ..50mm
+ 1: #031   50.0   1588   |Portable universal equinoctial sundial, |
+ 2: #073  44.45   1701   |Universal pocket sundial                |
+ 3: #074  44.45   1596   |Sundial, made as a locket, gilt metal, p|
+
+$ ./bin/search_ranges.escript priv/test_db/ranges 1980..1989
+ 1: #050  105.0   1984   |Quartz Analogue "no battery" wristwatch |
+ 2: #051   85.0   1984   |Analogue quartz clock with voice control|</pre>
+</div>
+<p>You can of course combine this with &#8216;normal&#8217; search terms, such as all
+clocks made from 1960 onwards:</p>
+<div class="highlight-python"><pre>$ ./bin/search_ranges.escript priv/test_db/ranges "clock 1960.."
+ 1: #052 1185.0   1974   |Reconstruction of Dondi's Astronomical C|
+ 2: #051   85.0   1984   |Analogue quartz clock with voice control|
+ 3: #009  380.0   1973   |Copy  of a Dwerrihouse skeleton clock wi|</pre>
+</div>
+<p>and even combining both ranges at once, such as all large objects from the 19th century:</p>
+<div class="highlight-python"><pre>$ ./bin/search_ranges.escript priv/test_db/ranges "clock  1000..mm 1800..1899"
+ 1: #024 1850.0   1845   |Regulator Clock with Gravity Escapement |</pre>
+</div>
+<p>Note the slightly awkward syntax <em>1000..mm</em>. The suffix must always go
+on the end of the entire range; it may also go on the beginning (so
+you can do <em>1000mm..mm</em>). Similarly, you can have <em>100mm..200mm</em> or
+<em>100..200mm</em> but not <em>100mm..200</em>. These rules are reversed for
+prefixes.</p>
+<p>If you get the rules wrong, the QueryParser will raise a
+<cite>QueryParserError</cite>, which in production code you could catch and
+either signal to the user or perhaps try the query again without the
+<cite>ValueRangeProcessor</cite> that tripped up:</p>
+<div class="highlight-python"><pre>$ ./bin/search_ranges.escript priv/test_db/ranges 1000mm..
+escript: exception error: {x_error,&lt;&lt;"QueryParserError"&gt;&gt;,
+                          &lt;&lt;"Unknown range operation"&gt;&gt;}
+  in function  xapian_server:client_error_handler/1
+    (src/xapian_server.erl, line 1110)
+  in call from erl_eval:do_apply/6 (erl_eval.erl, line 572)
+...</pre>
+</div>
+</div>
+<div class="section" id="handling-dates">
+<h2>Handling dates<a class="headerlink" href="#handling-dates" title="Permalink to this headline">¶</a></h2>
+<p>To restrict to a date range, we need to decide how to both store the
+date in a document value, and how we want users to input the date
+range in their query. <cite>DateValueRangeProcessor</cite>, which is part of
+Xapian, works by storing the date as a string in the form &#8216;YYYYMMDD&#8217;,
+and can take dates in either US style (month/day/year) or European
+style (day/month/year).</p>
+<p>To show how this works, we&#8217;re going to need to use a different
+dataset, because the museums data only gives years the objects were
+made in; we&#8217;ve built one using data on the fifty US states, taken from
+Wikipedia infoboxes on 5th November 2011 and then tidied up a small
+amount. The CSV file is <cite>data/states.csv</cite>, and the code that did most
+of the work is <cite>code/python/from_wikipedia.py</cite>, using a list of
+Wikipedia page titles in <cite>data/us_states_on_wikipedia</cite>. The CSV is
+licensed as Creative Commons Attribution-Share Alike 3.0, as per
+Wikipedia.</p>
+<p>We need a new indexer for this as well, which is
+<cite>bin/index_ranges2.escript</cite>. It stores two numbers using
+<cite>sortable_serialise</cite>: year of admission in value slot 1 and population
+in slot 3. It also stores the date of admission as &#8216;YYYYMMDD&#8217; in
+slot 2. We&#8217;ll look at just the date ones for now, and come back to the
+others in a minute.</p>
+<p>There isn&#8217;t any new code in this indexer that&#8217;s specific to Xapian,
+although there&#8217;s a fair amount of work to turn the data from Wikipedia
+into the forms we need. We use the indexer in the same way as previous
+ones:</p>
+<div class="highlight-python"><pre>$ ./bin/index_ranges2.escript priv/states.csv priv/test_db/ranges2</pre>
+</div>
+<p>With this done, we can change the set of value range processors we
+give to the QueryParser.</p>
+<p>Here <cite>DateValueRangeProcessor</cite> is created:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nn">xapian_resource</span><span class="p">:</span><span class="n">date_value_range_processor</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1860</span><span class="p">,</span> <span class="n">true</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>The <cite>DateValueRangeProcessor</cite> is working on value slot 2, with an
+&#8220;epoch&#8221; of 1860 (so two digit years will be considered as starting at
+1860 and going forward as far 1959). The second parameter is whether
+it should prefer US style dates or not; since we&#8217;re looking at US
+states, we&#8217;ve gone for US dates.</p>
+<p>This code can be rewritten using a name of the slot as a first parameter:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nn">xapian_resource</span><span class="p">:</span><span class="n">date_value_range_processor</span><span class="p">(</span><span class="n">admitted</span><span class="p">,</span> <span class="mi">1860</span><span class="p">,</span> <span class="n">true</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>The <cite>NumberValueRangeProcessor</cite> is as we saw before.</p>
+<p>This enables us to search for any state that talks about the Spanish
+in its description:</p>
+<div class="highlight-python"><pre>./bin/search_ranges2.escript priv/test_db/ranges2 spanish
+1: #004          State of Montana       18891108            989415
+2: #019            State of Texas       18451229          25145561</pre>
+</div>
+<p>or for all states admitted in the 19th century:</p>
+<div class="highlight-python"><pre>$ ./bin/search_ranges2.escript priv/test_db/ranges2 "1800..1899"
+ 1: #001       State of Washington      18891111           6744496
+ 2: #002         State of Arkansas      18360615           2915918
+ 3: #003           State of Oregon      18590214           3831074
+ 4: #004          State of Montana      18891108            989415
+ 5: #005                     Idaho      18900703           1567582
+ 6: #006           State of Nevada      18641031           2700551
+ 7: #007       State of California      18500909          37253956
+ 8: #009             State of Utah      18960104           2763885
+ 9: #010          State of Wyoming      18900710            563626
+10: #011         State of Colorado      18760801           5029196</pre>
+</div>
+<p>That uses the <cite>NumberValueRangeProcessor</cite> on value slot 1, as in our
+previous example. Let&#8217;s be more specific and ask for only those
+between November 8th 1889, when Montana became part of the Union, and
+July 10th 1890, when Wyoming joined:</p>
+<div class="highlight-python"><pre>$ ./bin/search_ranges2.escript priv/test_db/ranges2 "11/08/1889..07/10/1890"
+ 1: #001       State of Washington      18891111           6744496
+ 2: #004          State of Montana      18891108            989415
+ 3: #005                     Idaho      18900703           1567582
+ 4: #010          State of Wyoming      18900710            563626</pre>
+</div>
+<p>That uses the <cite>DateValueRangeProcessor</cite> on value slot 2; it can&#8217;t cope
+with year ranges, which is why we indexed to both slots 1 and 2.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Range queries</a><ul>
+<li><a class="reference internal" href="#i-m-only-interested-in-the-1980s">I&#8217;m only interested in the 1980s</a></li>
+<li><a class="reference internal" href="#how-xapian-supports-range-queries">How Xapian supports range queries</a></li>
+<li><a class="reference internal" href="#creating-the-document-values">Creating the document values</a></li>
+<li><a class="reference internal" href="#searching-with-ranges">Searching with ranges</a></li>
+<li><a class="reference internal" href="#handling-dates">Handling dates</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="boolean_filters.html"
+                        title="previous chapter">How to filter search results</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="facets.html"
+                        title="next chapter">Facets</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howtos/range_queries.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="facets.html" title="Facets"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="boolean_filters.html" title="How to filter search results"
+             >previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >How To...</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

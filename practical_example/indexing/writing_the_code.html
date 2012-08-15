@@ -1,0 +1,162 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Let’s write some code &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Indexing" href="index.html" />
+    <link rel="next" title="Verifying the index using delve" href="verifying_the_index.html" />
+    <link rel="prev" title="The index plan" href="index_plan.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="verifying_the_index.html" title="Verifying the index using delve"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index_plan.html" title="The index plan"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Indexing</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="let-s-write-some-code">
+<h1>Let&#8217;s write some code<a class="headerlink" href="#let-s-write-some-code" title="Permalink to this headline">¶</a></h1>
+<p>Here&#8217;s the significant part of some example code to implement this index plan.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">dbpath</span><span class="p">):</span>
+    <span class="c"># Create or open the database we&#39;re going to be writing to.</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">xapian</span><span class="o">.</span><span class="n">WritableDatabase</span><span class="p">(</span><span class="n">dbpath</span><span class="p">,</span> <span class="n">xapian</span><span class="o">.</span><span class="n">DB_CREATE_OR_OPEN</span><span class="p">)</span>
+
+    <span class="c"># Set up a TermGenerator that we&#39;ll use in indexing.</span>
+    <span class="n">termgenerator</span> <span class="o">=</span> <span class="n">xapian</span><span class="o">.</span><span class="n">TermGenerator</span><span class="p">()</span>
+    <span class="n">termgenerator</span><span class="o">.</span><span class="n">set_stemmer</span><span class="p">(</span><span class="n">xapian</span><span class="o">.</span><span class="n">Stem</span><span class="p">(</span><span class="s">&quot;en&quot;</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">fields</span> <span class="ow">in</span> <span class="n">parse_csv_file</span><span class="p">(</span><span class="n">datapath</span><span class="p">):</span>
+        <span class="c"># &#39;fields&#39; is a dictionary mapping from field name to value.</span>
+        <span class="c"># Pick out the fields we&#39;re going to index.</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;DESCRIPTION&#39;</span><span class="p">,</span> <span class="s">u&#39;&#39;</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;TITLE&#39;</span><span class="p">,</span> <span class="s">u&#39;&#39;</span><span class="p">)</span>
+        <span class="n">identifier</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;id_NUMBER&#39;</span><span class="p">,</span> <span class="s">u&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c"># We make a document and tell the term generator to use this.</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">xapian</span><span class="o">.</span><span class="n">Document</span><span class="p">()</span>
+        <span class="n">termgenerator</span><span class="o">.</span><span class="n">set_document</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+
+        <span class="c"># Index each field with a suitable prefix.</span>
+        <span class="n">termgenerator</span><span class="o">.</span><span class="n">index_text</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;S&#39;</span><span class="p">)</span>
+        <span class="n">termgenerator</span><span class="o">.</span><span class="n">index_text</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;XD&#39;</span><span class="p">)</span>
+
+        <span class="c"># Index fields without prefixes for general search.</span>
+        <span class="n">termgenerator</span><span class="o">.</span><span class="n">index_text</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">termgenerator</span><span class="o">.</span><span class="n">increase_termpos</span><span class="p">()</span>
+        <span class="n">termgenerator</span><span class="o">.</span><span class="n">index_text</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
+
+        <span class="c"># Store all the fields for display purposes.</span>
+        <span class="n">doc</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fields</span><span class="p">))</span>
+
+        <span class="c"># We use the identifier to ensure each object ends up in the</span>
+        <span class="c"># database only once no matter how many times we run the</span>
+        <span class="c"># indexer.</span>
+        <span class="n">idterm</span> <span class="o">=</span> <span class="s">u&quot;Q&quot;</span> <span class="o">+</span> <span class="n">identifier</span>
+        <span class="n">doc</span><span class="o">.</span><span class="n">add_boolean_term</span><span class="p">(</span><span class="n">idterm</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">replace_document</span><span class="p">(</span><span class="n">idterm</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A full copy of this code is available in <tt class="docutils literal"><span class="pre">code/python/index1.py</span></tt>.</p>
+<p>You can run this code to index a sample data file (held in
+<tt class="docutils literal"><span class="pre">data/100-objects-v1.csv</span></tt>) to a database at path <tt class="docutils literal"><span class="pre">db</span></tt> as follows:</p>
+<div class="highlight-python"><pre>python code/python/index1.py data/100-objects-v1.csv db</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index_plan.html"
+                        title="previous chapter">The index plan</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="verifying_the_index.html"
+                        title="next chapter">Verifying the index using delve</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/practical_example/indexing/writing_the_code.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="verifying_the_index.html" title="Verifying the index using delve"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index_plan.html" title="The index plan"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >A practical example</a> &raquo;</li>
+          <li><a href="index.html" >Indexing</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,152 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Search concepts &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Core concepts" href="../index.html" />
+    <link rel="next" title="Queries" href="queries.html" />
+    <link rel="prev" title="Index limitations" href="../indexing/limitations.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="queries.html" title="Queries"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../indexing/limitations.html" title="Index limitations"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Core concepts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="search-concepts">
+<h1>Search concepts<a class="headerlink" href="#search-concepts" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="queries.html">Queries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="queries.html#simple-queries">Simple Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queries.html#logical-operators">Logical Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queries.html#maybe">Maybe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queries.html#filtering">Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queries.html#value-ranges">Value ranges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queries.html#near-and-phrase">Near and Phrase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queries.html#additional-operators">Additional operators</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="queryparser.html">Query Parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#term-generation">Term Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#wildcards">Wildcards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#bracketed-expressions">Bracketed Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#default-operator">Default Operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#additional-operators">Additional operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#searching-with-prefixes">Searching with Prefixes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#ranges">Ranges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#stop-words">Stop words</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queryparser.html#parser-flags">Parser Flags</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ranked_matches.html">Ranked matches</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ranked_matches.html#alternative-sort-orders">Alternative sort orders</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="search_limitations.html">Search-time Limitations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="search_limitations.html#document-id-range">Document ID Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="search_limitations.html#positional-queries">Positional Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="search_limitations.html#collapsing">Collapsing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="search_limitations.html#concurrently-open-databases">Concurrently Open Databases</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../indexing/limitations.html"
+                        title="previous chapter">Index limitations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="queries.html"
+                        title="next chapter">Queries</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/concepts/search/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="queries.html" title="Queries"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../indexing/limitations.html" title="Index limitations"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

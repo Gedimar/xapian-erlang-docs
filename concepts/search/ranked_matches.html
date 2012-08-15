@@ -1,0 +1,160 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Ranked matches &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Search concepts" href="index.html" />
+    <link rel="next" title="Search-time Limitations" href="search_limitations.html" />
+    <link rel="prev" title="Query Parser" href="queryparser.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="search_limitations.html" title="Search-time Limitations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="queryparser.html" title="Query Parser"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Search concepts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ranked-matches">
+<h1>Ranked matches<a class="headerlink" href="#ranked-matches" title="Permalink to this headline">¶</a></h1>
+<p>When you run a Query using Xapian, what you get is a list of <cite>ranked</cite>
+<cite>matches</cite>.</p>
+<p>Each match is a Xapian Document which satisfies the Query, with a
+<cite>weight</cite>, and the list is ordered by decreasing weight, the weight
+being an indicator of how good a match that Document is for the query
+that was run: a higher weight means a better match. The <cite>rank</cite> of each
+match is simply the position in the list of all matches, starting from
+0.  Some other search systems use the word &#8220;score&#8221; instead of weight.</p>
+<p>The actual weight is calculated by a <cite>weighting scheme</cite>; Xapian comes
+with a few different ones or you can write your own, although often
+the default is fine. (It uses a scheme called BM25, which takes into
+account things like how common a matching term is in a matching
+document compared to in the entire database, and the lengths of
+different matching documents.)</p>
+<p>Rather than having to run through the entire list of matches from the
+beginning, you actually ask for a sub-range of the entire list of
+matches, from an offset and extending for a given number of
+matches. Many search applications will provide the user with a way of
+&#8220;paging&#8221; through the matches, so the first page might be starting at 0
+for 10 matches, the second page starting at 10 for 10 matches, and so
+on.</p>
+<p>A page of matches in Xapian is called an MSet (for &#8220;match set&#8221;).</p>
+<div class="section" id="alternative-sort-orders">
+<h2>Alternative sort orders<a class="headerlink" href="#alternative-sort-orders" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, rather than getting results sorted by <cite>weight</cite>, it would be more
+useful to get them in some other order.  For example, it might be desirable
+to get results in order of the values stored in a date field.</p>
+<p>To do this, you first need to store the information used for the sort in a
+value slot, as described in the indexing documentation.  You can then tell
+Xapian at search time to sort by the value in that slot.  It is also
+possible to sort by the values in several slots (e.g., to sort items which
+have the same value in a particular slot by the value in a secondary slot).</p>
+<p>Finally, it is possible to ask Xapian to return the documents in order of
+the Xapian document ID numbers.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ranked matches</a><ul>
+<li><a class="reference internal" href="#alternative-sort-orders">Alternative sort orders</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="queryparser.html"
+                        title="previous chapter">Query Parser</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="search_limitations.html"
+                        title="next chapter">Search-time Limitations</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/concepts/search/ranked_matches.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="search_limitations.html" title="Search-time Limitations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="queryparser.html" title="Query Parser"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" >Search concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

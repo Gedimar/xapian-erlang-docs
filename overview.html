@@ -1,0 +1,194 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="index.html" />
+    <link rel="next" title="Core concepts" href="concepts/index.html" />
+    <link rel="prev" title="Getting Started with Xapian" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="concepts/index.html" title="Core concepts"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Getting Started with Xapian"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>Xapian is an open source search engine library, which allows developers to
+add advanced indexing and search facilities to their own applications.</p>
+<p>This document aims to be a guide to getting up and running with your first
+database, explaining basic concepts and providing code examples of the
+library&#8217;s core functionality.</p>
+<p>If you just want to follow our code examples, you can skip the chapter on &#8220;Core
+Concepts&#8221; and go straight to <a class="reference internal" href="practical_example/index.html#a-practical-example"><em>A practical example</em></a> - but you should
+probably make sure you have Xapian installed first!</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>There are two pieces of Xapian you need to following this guide: the
+library itself, and support for the language you&#8217;re going to be
+using. We&#8217;ve written this guide mostly using <a class="reference external" href="http://www.python.org/">Python</a> for the examples,
+although we&#8217;re also working on full translations into <a class="reference external" href="http://www.php.net/">PHP</a> and C++.</p>
+<p>We&#8217;ll be using Xapian 1.2 throughout, so let&#8217;s get that onto your system.</p>
+<div class="section" id="installation-on-debian-or-ubuntu">
+<h3>Installation on Debian or Ubuntu<a class="headerlink" href="#installation-on-debian-or-ubuntu" title="Permalink to this headline">¶</a></h3>
+<p>Recent versions of both Debian and Ubuntu have Xapian 1.2 packaged: if
+you&#8217;re on Debian 6.0 (squeeze) or later, or Ubuntu 11.10 (Oneiric
+Ocelot) you can just do one of the following depending on whether you
+want to work through the examples in Python or C++:</p>
+<div class="highlight-python"><pre>$ sudo apt-get install python-xapian
+$ sudo apt-get install libxapian-dev</pre>
+</div>
+<p>If you&#8217;re still on Debian 5.0 (lenny) you&#8217;ll have to <a class="reference internal" href="#compile-from-source">compile from
+source</a>, and if you&#8217;re on Ubuntu 11.04 (Natty Narwhal) or before you&#8217;ll
+need to install from our <a class="reference external" href="https://launchpad.net/~xapian-backports/+archive/xapian-1.2">PPA</a>.</p>
+<p>Packages of the PHP bindings aren&#8217;t available due to a licence
+compatibility issue, but you can <a class="reference external" href="http://trac.xapian.org/wiki/FAQ/PHP%20Bindings%20Package">build your own packages</a>.</p>
+</div>
+<div class="section" id="installation-on-other-systems">
+<h3>Installation on other systems<a class="headerlink" href="#installation-on-other-systems" title="Permalink to this headline">¶</a></h3>
+<p>Many operating systems have packages available to make Xapian easy to
+install; information is available on <a class="reference external" href="http://xapian.org/download">our download page</a>. This covers
+most popular Linux distributions, FreeBSD, Mac OS (Python and C++
+only) and Windows using Microsoft Visual Studio.</p>
+<p id="compile-from-source">If you&#8217;re using a different operating system, you will need to compile
+from source, which should work on any Unix-derived operating system,
+and Windows using any one of Cygwin, MSYS+mingw or MSVC. Source code
+is again available from our download page, as are additional Makefiles
+for building using MSVC on Windows.</p>
+</div>
+</div>
+<div class="section" id="datasets-and-example-code">
+<h2>Datasets and example code<a class="headerlink" href="#datasets-and-example-code" title="Permalink to this headline">¶</a></h2>
+<p>If you want to run the code we use to demonstrate Xapian&#8217;s features
+(and we recommend you do), you&#8217;ll need both the code itself and the
+two datasets we use.</p>
+<p>The example code is available in Python, PHP, and C++ so far, although
+there&#8217;s only a complete set of examples for Python at present.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">finalise datasets and code and link to them from here</p>
+</div>
+<p>For now, you&#8217;ll want to grab the <a class="reference external" href="https://github.com/jaylett/xapian-docsprint">documentation source from github</a> which
+contains the example code in each language, and also the data files listed
+in the next paragraph (both are in the &#8220;code&#8221; subdirectory).</p>
+<p>The first dataset is the first 100 objects taken from <a class="reference external" href="http://api.sciencemuseum.org.uk/documentation/collections/">museum
+catalogue data released by the Science Museum</a>, and
+the second we have curated ourselves from information on Wikipedia
+about the 50 <a class="reference external" href="http://en.wikipedia.org/wiki/U.S._state">US States</a>. Both are provided as
+gzipped CSV files. The first dataset is released under the <a class="reference external" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative
+Commons license Attribution-NonCommercial-ShareAlike</a> license, and the
+second under <a class="reference external" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0</a>.</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">link to here from every howto and everything that needs the data files and example code</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#installation-on-debian-or-ubuntu">Installation on Debian or Ubuntu</a></li>
+<li><a class="reference internal" href="#installation-on-other-systems">Installation on other systems</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#datasets-and-example-code">Datasets and example code</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Getting Started with Xapian</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="concepts/index.html"
+                        title="next chapter">Core concepts</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="concepts/index.html" title="Core concepts"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Getting Started with Xapian"
+             >previous</a> |</li>
+        <li><a href="index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to change how documents are scored &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" />
+    <link rel="up" title="How To..." href="index.html" />
+    <link rel="next" title="Geospatial searches" href="geospatial.html" />
+    <link rel="prev" title="Improving your results" href="improve_results.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="geospatial.html" title="Geospatial searches"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="improve_results.html" title="Improving your results"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">How To...</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="how-to-change-how-documents-are-scored">
+<h1>How to change how documents are scored<a class="headerlink" href="#how-to-change-how-documents-are-scored" title="Permalink to this headline">¶</a></h1>
+<p>The document weighting schemes which Xapian includes by default are
+<tt class="docutils literal"><span class="pre">BM25Weight</span></tt>, <tt class="docutils literal"><span class="pre">TradWeight</span></tt> and <tt class="docutils literal"><span class="pre">BoolWeight</span></tt>.  The default is
+BM25Weight.</p>
+<div class="section" id="boolweight">
+<h2>BoolWeight<a class="headerlink" href="#boolweight" title="Permalink to this headline">¶</a></h2>
+<p>BoolWeight assigns a weight of 0 to all documents, so the ordering is
+determined solely by other factors.</p>
+</div>
+<div class="section" id="tradweight">
+<h2>TradWeight<a class="headerlink" href="#tradweight" title="Permalink to this headline">¶</a></h2>
+<p>TradWeight implements the original probabilistic weighting formula, which
+is essentially a special case of BM25 (it&#8217;s BM25 with k2 = 0, k3 = 0, b =
+1, and min_normlen = 0, except that all the weights are scaled by a
+constant factor).</p>
+</div>
+<div class="section" id="bm25weight">
+<h2>BM25Weight<a class="headerlink" href="#bm25weight" title="Permalink to this headline">¶</a></h2>
+<p>The BM25 weighting formula which Xapian uses by default has a number of
+parameters.  We have picked some default parameter values which do a good job
+in general.  The optimal values of these parameters depend on the data being
+indexed and the type of queries being run, so you may be able to improve the
+effectiveness of your search system by adjusting these values, but it&#8217;s a
+fiddly process to tune them so people tend not to bother.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Say something more useful about tuning the parameters!</p>
+</div>
+<p>See the <a class="reference external" href="bm25.html">BM25 documentation</a> for more details of BM25.</p>
+</div>
+<div class="section" id="custom-weighting-schemes">
+<h2>Custom Weighting Schemes<a class="headerlink" href="#custom-weighting-schemes" title="Permalink to this headline">¶</a></h2>
+<p>You can also implement your own weighting scheme, provided it can be expressed
+in the form of a sum over the matching terms, plus an extra term which depends
+on term-independent statistics (such as the normalised document length).</p>
+<p>For example, here&#8217;s an implementation of &#8220;coordinate matching&#8221; - each matching
+term scores one point:</p>
+<div class="highlight-python"><pre>class CoordinateWeight : public Xapian::Weight {
+  public:
+    CoordinateWeight * clone() const { return new CoordinateWeight; }
+    CoordinateWeight() { }
+    ~CoordinateWeight() { }
+
+    std::string name() const { return "Coord"; }
+    std::string serialise() const { return ""; }
+    CoordinateWeight * unserialise(const std::string &amp;) const {
+        return new CoordinateWeight;
+    }
+
+    Xapian::weight get_sumpart(Xapian::termcount, Xapian::doclength) const {
+        return 1;
+    }
+    Xapian::weight get_maxpart() const { return 1; }
+
+    Xapian::weight get_sumextra(Xapian::doclength) const { return 0; }
+    Xapian::weight get_maxextra() const { return 0; }
+
+    bool get_sumpart_needs_doclength() const { return false; }
+};</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">How to change how documents are scored</a><ul>
+<li><a class="reference internal" href="#boolweight">BoolWeight</a></li>
+<li><a class="reference internal" href="#tradweight">TradWeight</a></li>
+<li><a class="reference internal" href="#bm25weight">BM25Weight</a></li>
+<li><a class="reference internal" href="#custom-weighting-schemes">Custom Weighting Schemes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="improve_results.html"
+                        title="previous chapter">Improving your results</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="geospatial.html"
+                        title="next chapter">Geospatial searches</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howtos/weighting_scheme.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="geospatial.html" title="Geospatial searches"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="improve_results.html" title="Improving your results"
+             >previous</a> |</li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >How To...</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

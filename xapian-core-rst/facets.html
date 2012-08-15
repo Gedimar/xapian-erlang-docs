@@ -1,0 +1,230 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Xapian Faceting Support &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="xapian-faceting-support">
+<h1><a class="toc-backref" href="#id1">Xapian Faceting Support</a><a class="headerlink" href="#xapian-faceting-support" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#xapian-faceting-support" id="id1">Xapian Faceting Support</a><ul>
+<li><a class="reference internal" href="#introduction" id="id2">Introduction</a></li>
+<li><a class="reference internal" href="#how-to-use-faceting" id="id3">How to use Faceting</a><ul>
+<li><a class="reference internal" href="#indexing" id="id4">Indexing</a></li>
+<li><a class="reference internal" href="#searching" id="id5">Searching</a><ul>
+<li><a class="reference internal" href="#finding-facets" id="id6">Finding Facets</a></li>
+<li><a class="reference internal" href="#restricting-by-facet-values" id="id7">Restricting by Facet Values</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Xapian provides functionality which allows you to dynamically generate complete
+lists of category values which feature in matching documents.  There are
+numerous potential uses this can be put to, but a common one is to offer the
+user the ability to narrow down their search by filtering it to only include
+documents with a particular value of a particular category.  This is often
+referred to as <tt class="docutils literal"><span class="pre">faceted</span> <span class="pre">search</span></tt>.</p>
+<p>You may have many multiple facets (for example colour, manufacturer, product
+type) so Xapian allows you to handle multiple facets at once.</p>
+</div>
+<div class="section" id="how-to-use-faceting">
+<h2><a class="toc-backref" href="#id3">How to use Faceting</a><a class="headerlink" href="#how-to-use-faceting" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="indexing">
+<h3><a class="toc-backref" href="#id4">Indexing</a><a class="headerlink" href="#indexing" title="Permalink to this headline">¶</a></h3>
+<p>When indexing a document, you need to add each facet in a different numbered
+value slot.  As described elsewhere in the documentation, each Xapian document
+has a set of &#8220;value slots&#8221;, each of which is addressed by a number, and can
+contain a value which is an arbitrary string.</p>
+<p>The <tt class="docutils literal"><span class="pre">#x_value{}</span></tt> record can be used to put values into a
+particular slot.  So, if you had a database of books, you might put &#8220;price&#8221;
+facet values in slot 0, say (serialised to strings using
+the <tt class="docutils literal"><span class="pre">float</span></tt> value type, or some similar function), &#8220;author&#8221; facet
+values in slot 1, &#8220;publisher&#8221; facet values in slot 2 and &#8220;publication type&#8221;
+(eg, hardback, softback, etc) values in slot 3.</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nv">Params</span> <span class="o">=</span> <span class="p">[</span><span class="n">write</span><span class="p">,</span> <span class="n">create</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span>
+    <span class="nl">#x_value_name</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">price</span><span class="p">,</span> <span class="n">type</span> <span class="o">=</span> <span class="nb">float</span><span class="p">},</span>
+    <span class="nl">#x_value_name</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">author</span><span class="p">},</span>
+    <span class="nl">#x_value_name</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">publisher</span><span class="p">},</span>
+    <span class="nl">#x_value_name</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">publication_type</span><span class="p">},</span>
+<span class="p">],</span>
+<span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">Server</span><span class="p">}</span> <span class="o">=</span> <span class="nn">xapian_server</span><span class="p">:</span><span class="n">open</span><span class="p">(</span><span class="nv">Path</span><span class="p">,</span> <span class="nv">Params</span><span class="p">),</span>
+<span class="nv">Document</span> <span class="o">=</span>
+    <span class="p">[</span> <span class="nl">#x_value</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="n">price</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">100</span><span class="p">}</span>
+    <span class="p">,</span> <span class="nl">#x_value</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="n">author</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="s">&quot;Joe Armstrong&quot;</span><span class="p">}</span>
+    <span class="p">,</span> <span class="nl">#x_value</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="n">publisher</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="s">&quot;The Pragmatic Bookshelf&quot;</span><span class="p">}</span>
+    <span class="p">,</span> <span class="nl">#x_value</span><span class="p">{</span><span class="n">slot</span> <span class="o">=</span> <span class="n">publication_type</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="s">&quot;softback&quot;</span><span class="p">}</span>
+    <span class="p">],</span>
+<span class="nn">xapian_server</span><span class="p">:</span><span class="n">add_document</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">Document</span><span class="p">).</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="searching">
+<h3><a class="toc-backref" href="#id5">Searching</a><a class="headerlink" href="#searching" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="finding-facets">
+<h4><a class="toc-backref" href="#id6">Finding Facets</a><a class="headerlink" href="#finding-facets" title="Permalink to this headline">¶</a></h4>
+<p>At search time, for each facet you want to consider, you need to get a count of
+the number of times each facet value occurs in each slot; for the example
+above, if you wanted to get facets for &#8220;price&#8221;, &#8220;author&#8221; and &#8220;publication type&#8221;
+you&#8217;d want to get the counts from slots 0, 1 and 3.</p>
+<p>This can be done using a value count match spy. It can be created, calling
+<tt class="docutils literal"><span class="pre">xapian_match_spy:value_count/2</span></tt>.
+Spies are used by setting the <tt class="docutils literal"><span class="pre">spies</span></tt> field of the <tt class="docutils literal"><span class="pre">#x_match_set{}</span></tt> record
+to a list of resources for each value slot you want to get facet counts
+for, like so:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="nv">SpySlot0</span> <span class="o">=</span> <span class="nn">xapian_match_spy</span><span class="p">:</span><span class="n">value_count</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="n">price</span><span class="p">),</span>
+<span class="nv">SpySlot1</span> <span class="o">=</span> <span class="nn">xapian_match_spy</span><span class="p">:</span><span class="n">value_count</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="n">author</span><span class="p">),</span>
+<span class="nv">SpySlot3</span> <span class="o">=</span> <span class="nn">xapian_match_spy</span><span class="p">:</span><span class="n">value_count</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="n">publication_type</span><span class="p">),</span>
+
+<span class="nv">Query</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">,</span>
+<span class="nv">EnquireResourceId</span> <span class="o">=</span> <span class="nn">xapian_server</span><span class="p">:</span><span class="n">enquire</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">Query</span><span class="p">),</span>
+<span class="nv">MSetParams</span> <span class="o">=</span> <span class="nl">#x_match_set</span><span class="p">{</span>
+    <span class="n">enquire</span> <span class="o">=</span> <span class="nv">EnquireResourceId</span><span class="p">,</span>
+    <span class="n">from</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">max_items</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">check_at_least</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+    <span class="n">spies</span> <span class="o">=</span> <span class="p">[</span><span class="nv">SpySlot0</span><span class="p">,</span> <span class="nv">SpySlot1</span><span class="p">,</span> <span class="nv">SpySlot3</span><span class="p">]},</span>
+<span class="nv">MSetResourceId</span> <span class="o">=</span> <span class="nn">xapian_server</span><span class="p">:</span><span class="n">match_set</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">MSetParams</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">10000</span></tt> in the <tt class="docutils literal"><span class="pre">check_at_least</span></tt> field tells Xapian to check at least
+10000 documents, so the MatchSpy objects will be passed at least 10000
+documents to tally facet information from (unless fewer than 10000 documents
+match the query, in which case they will see all of them).  Setting this to
+<tt class="docutils literal"><span class="pre">xapian_server.database_info(Server,</span> <span class="pre">document_count)</span></tt> will make the facet
+counts exact, but Xapian will have to do more work for most queries so
+searches will be slower.</p>
+<p>The spy objects now contain the facet information.  You can find out how
+many documents they looked at by calling
+<tt class="docutils literal"><span class="pre">xapian_server:resource_info(Server,</span> <span class="pre">SpySlot0,</span> <span class="pre">document_count)</span></tt>.
+(All the spies will have looked at the same number of documents.)
+You can read the values from, say, <tt class="docutils literal"><span class="pre">Spy0</span></tt> like this:</p>
+<div class="highlight-erlang"><div class="highlight"><pre><span class="p">-</span><span class="ni">record</span><span class="p">(</span><span class="nl">spy_term</span><span class="p">,</span> <span class="p">{</span><span class="n">value</span><span class="p">,</span> <span class="n">freq</span><span class="p">}).</span>
+
+<span class="nv">Table</span> <span class="o">=</span> <span class="nn">xapian_server</span><span class="p">:</span><span class="n">value_count_match_spy_table</span><span class="p">(</span><span class="nv">Server</span><span class="p">,</span> <span class="nv">SpyRes</span><span class="p">,</span> <span class="nv">Meta</span><span class="p">),</span>
+<span class="nv">Records</span> <span class="o">=</span> <span class="nn">qlc</span><span class="p">:</span><span class="n">q</span><span class="p">(</span><span class="nv">Table</span><span class="p">).</span>
+</pre></div>
+</div>
+<p>Each spy can be used with <tt class="docutils literal"><span class="pre">xapian_server:match_set/2</span></tt> only once.</p>
+</div>
+<div class="section" id="restricting-by-facet-values">
+<h4><a class="toc-backref" href="#id7">Restricting by Facet Values</a><a class="headerlink" href="#restricting-by-facet-values" title="Permalink to this headline">¶</a></h4>
+<p>If you&#8217;re using the facets to offer the user choices for narrowing down
+their search results, you then need to be able to apply a suitable filter.</p>
+<p>For a single value, you could use <tt class="docutils literal"><span class="pre">#x_query_value_range{}</span></tt> with the
+same start and end,
+.. or <tt class="docutils literal"><span class="pre">Xapian::MatchDecider</span></tt>,
+but it&#8217;s probably most
+efficient to also index the categories as suitably prefixed boolean terms and
+use those for filtering.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Xapian Faceting Support</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#how-to-use-faceting">How to use Faceting</a><ul>
+<li><a class="reference internal" href="#indexing">Indexing</a></li>
+<li><a class="reference internal" href="#searching">Searching</a><ul>
+<li><a class="reference internal" href="#finding-facets">Finding Facets</a></li>
+<li><a class="reference internal" href="#restricting-by-facet-values">Restricting by Facet Values</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/xapian-core-rst/facets.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

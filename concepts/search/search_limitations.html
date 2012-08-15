@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Search-time Limitations &mdash; Getting Started with Xapian 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Getting Started with Xapian 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Search concepts" href="index.html" />
+    <link rel="next" title="A practical example" href="../../practical_example/index.html" />
+    <link rel="prev" title="Ranked matches" href="ranked_matches.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../practical_example/index.html" title="A practical example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ranked_matches.html" title="Ranked matches"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Search concepts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="search-time-limitations">
+<h1>Search-time Limitations<a class="headerlink" href="#search-time-limitations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="document-id-range">
+<h2>Document ID Range<a class="headerlink" href="#document-id-range" title="Permalink to this headline">¶</a></h2>
+<p>When searching over multiple database at once, the document ids from each
+database are interleaved to produce the document ids in the combined
+database, so the 32-bit document id size can hit well before you reach four
+billion documents - for example, if you&#8217;re searching one large database and
+31 small ones, you&#8217;ll reach the limit of document id size on the combined
+database when the largest database reaches document id 2<sup>27</sup> (about
+134 million).</p>
+<p>Also, there may be gaps in the range of used document ids, either because
+you&#8217;ve deleted documents, or because you&#8217;re explicitly setting them to
+match an external system.</p>
+</div>
+<div class="section" id="positional-queries">
+<h2>Positional Queries<a class="headerlink" href="#positional-queries" title="Permalink to this headline">¶</a></h2>
+<p>Currently <tt class="docutils literal"><span class="pre">OP_PHRASE</span></tt> and <tt class="docutils literal"><span class="pre">OP_NEAR</span></tt> don&#8217;t really support non-term
+subqueries, though simple cases get rearranged (so for example, <tt class="docutils literal"><span class="pre">A</span> <span class="pre">PHRASE</span>
+<span class="pre">(B</span> <span class="pre">OR</span> <span class="pre">C)</span></tt> becomes <tt class="docutils literal"><span class="pre">(A</span> <span class="pre">PHRASE</span> <span class="pre">B)</span> <span class="pre">OR</span> <span class="pre">(A</span> <span class="pre">PHRASE</span> <span class="pre">C)</span></tt>).</p>
+<p>Queries which use positional information (<tt class="docutils literal"><span class="pre">OP_PHRASE</span></tt> and <tt class="docutils literal"><span class="pre">OP_NEAR</span></tt>)
+can be significantly slower to process.  The way these are implemented is
+to find documents which have all the necessary terms in, and then to check
+if the terms fulfil the positional requirements, so if a lot of documents
+contain the required terms but not in the right places, a lot more work is
+required than for just doing an AND query.  This will be improved in a
+future release.</p>
+</div>
+<div class="section" id="collapsing">
+<h2>Collapsing<a class="headerlink" href="#collapsing" title="Permalink to this headline">¶</a></h2>
+<p>You can&#8217;t perform more than one collapse operation during a search.</p>
+</div>
+<div class="section" id="concurrently-open-databases">
+<h2>Concurrently Open Databases<a class="headerlink" href="#concurrently-open-databases" title="Permalink to this headline">¶</a></h2>
+<p>If you try to search many databases concurrently, you may hit the
+per-process file-descriptor limit - each chert database uses between 3 and
+7 fds depending which tables are present, and a process can only open a
+certain number (on Linux, the default is usually 1024, so that limits you
+to a few hundred concurrently open databases).  You can raise the
+per-process limit on some Unix-like platforms, though you may need to be
+root to do so.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">add or link to some details of how to do this</p>
+</div>
+<p>You can address this issue (and spread the search load) by using the remote
+backend to search databases on a cluster of machines, which only needs one
+fd open per database on the client machine.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Search-time Limitations</a><ul>
+<li><a class="reference internal" href="#document-id-range">Document ID Range</a></li>
+<li><a class="reference internal" href="#positional-queries">Positional Queries</a></li>
+<li><a class="reference internal" href="#collapsing">Collapsing</a></li>
+<li><a class="reference internal" href="#concurrently-open-databases">Concurrently Open Databases</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ranked_matches.html"
+                        title="previous chapter">Ranked matches</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../practical_example/index.html"
+                        title="next chapter">A practical example</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/concepts/search/search_limitations.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../practical_example/index.html" title="A practical example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ranked_matches.html" title="Ranked matches"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Getting Started with Xapian 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Core concepts</a> &raquo;</li>
+          <li><a href="index.html" >Search concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Olly Betts, Richard Boulton, Justin Finkelstein, James Aylett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
