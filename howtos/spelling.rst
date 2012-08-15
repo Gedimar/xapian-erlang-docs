@@ -25,17 +25,21 @@ Static spelling data
 If ``db`` is a Xapian::WritableDatabase, you can add to the spelling dictionary
 using::
 
-    db.add_spelling(word, frequency_inc);
+    xapian_server:add_spelling(Server, [#x_term{value = "word", frequency = 1}]).
 
 The ``frequency_inc`` parameter is optional, and defaults to 1.
 
 And the corresponding way to remove from the spelling dictionary is::
 
-    db.remove_spelling(word, frequency_dec);
+    xapian_server:add_spelling(Server, [#x_term{value = "word", frequency = -1}]).
 
 The ``frequency_dec`` parameter is optional and defaults to 1.  If you try to
 decrement the frequency of a word by more than its current value, it's just
 removed.
+
+To remove the term, use::
+
+    xapian_server:add_spelling(Server, [#x_term{value = "word", action = remove}]).
 
 Dynamic spelling data
 ---------------------
@@ -43,13 +47,8 @@ Dynamic spelling data
 ``Xapian::TermGenerator`` can be configured to automatically add words from
 indexed documents to the spelling dictionary::
 
-    Xapian::TermGenerator indexer;
-    indexer.set_database(db);
-    indexer.set_flags(indexer.FLAG_SPELLING);
-
-Note that you must call the ``set_database()`` method as well as setting
-``FLAG_SPELLING`` so that Xapian knows where to add the spelling dictionary
-entries.
+    xapian_server:add_document(Server, [#x_text{value = "text here", 
+                                                features = spelling}]).
 
 If a document is removed or replaced, any spelling dictionary entries that
 were added when it was originally indexed won't be automatically removed.
@@ -60,7 +59,13 @@ of the document collection as a source of spelling data.
 
 If you really want these entries removed, you can run through the termlist of
 each document you are about to remove or replace (if you indexed terms
-unstemmed) and call ``remove_spelling()`` for each word.
+unstemmed) and call this code for each word::
+
+    xapian_server:add_spelling(Server, [#x_term{value = "word", action = remove}]).
+
+To index terms without adding new documents, use::
+
+    xapian_server:add_spelling(Server, [#x_text{value = "text here"}]).
 
 Searching
 =========
@@ -70,17 +75,46 @@ Searching
 QueryParser Integration
 -----------------------
 
-If FLAG_SPELLING_CORRECTION is passed to QueryParser::parse_query() and
-QueryParser::set_database() has been called, the QueryParser will look for
-corrections for words in the query.  In Xapian 1.2.2 and earlier, it only
-did this for terms which aren't found in the database.
+If `spelling_correction` is used with `#x_query_string.features`, 
+the QueryParser will look for corrections for words in the query.  
+In Xapian 1.2.2 and earlier, it only did this for terms which 
+aren't found in the database.
 
 If a correction is found, then a modified version of the query string will be
 generated which can be obtained by calling
-QueryParser::get_corrected_query_string().  However, the original query string
+`corrected_query_string`.  However, the original query string
 will still be parsed, since you'll often want to ask the user "Did you mean:
-[...] ?" - if you want to automatically use the corrected form, just call
-QueryParser::parse_query() on it.
+[...] ?" - if you want to automatically use the corrected form, just parse it
+again.
+
+Here is an example::
+
+    spelling_correction(Server, Str, IsCorrect) ->
+        QS = #x_query_string{value = Str, 
+                            features = [default, spelling_correction]},    
+        CS1 = xapian_server:parse_string(Server, S1, [corrected_query_string
+                                                     ,query_resource]),
+        [{corrected_query_string, Corrected}, {query_resource, Query}] = CS1,
+        case Corrected of
+            same -> 
+                %% Use Query resource.
+                Query;
+            _ ->
+                case IsCorrect(Corrected) of
+                    true ->
+                        %% Parse again
+                        xapian_server:release_resource(Server, Query),
+                        #x_query_string{value = Corrected};
+                    false ->
+                        Query
+                end
+        end.
+                
+Lets run this function for string "docment", that will be always
+corrected::
+
+    spelling_correction(Server, "docment", fun(_Corrected) -> true end).
+
 
 Omega
 =====
