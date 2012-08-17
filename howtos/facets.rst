@@ -58,6 +58,7 @@ This function returns a resource, that collects information during
 a `MatchSet` generation. 
 
 .. code-block:: erlang
+
     MSetParams = #x_match_set{
     enquire = EnquireRes,
     spies = [MatchSpyRes]},

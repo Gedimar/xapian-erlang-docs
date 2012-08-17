@@ -7,19 +7,26 @@ The document weighting schemes which Xapian includes by default are
 ``BM25Weight``, ``TradWeight`` and ``BoolWeight``.  The default is
 BM25Weight.
 
+The ``#x_enquire.weighting_scheme`` field defines the weighting algorithm.
+
 BoolWeight
 ----------
 
 BoolWeight assigns a weight of 0 to all documents, so the ordering is
-determined solely by other factors.
+determined solely by other factors::
+    #x_enquire{weighting_scheme = xapian_resource:bool_weight()}.
 
+
+    
 TradWeight
 ----------
 
 TradWeight implements the original probabilistic weighting formula, which
-is essentially a special case of BM25 (it's BM25 with k2 = 0, k3 = 0, b =
+is essentially a special case of BM25: it's BM25 with k2 = 0, k3 = 0, b =
 1, and min_normlen = 0, except that all the weights are scaled by a
-constant factor).
+constant factor K::
+    #x_enquire{weighting_scheme = xapian_resource:trad_weight(K)}.
+
 
 BM25Weight
 ----------
@@ -35,38 +42,10 @@ fiddly process to tune them so people tend not to bother.
 
 See the `BM25 documentation <bm25.html>`_ for more details of BM25.
 
-Custom Weighting Schemes
-------------------------
+To set this weighting scheme use::
+    #x_enquire{weighting_scheme = xapian_resource:bm25_weight(
+        #x_bm25_weight{k1=K1, k2=K2, l3=K3, b=B, min_normlen=MinNormLen})}.
+or::
+    #x_enquire{weighting_scheme = 
+        xapian_resource:bm25_weight(K1, K2, K3, B, MinNormLen)}.
 
-You can also implement your own weighting scheme, provided it can be expressed
-in the form of a sum over the matching terms, plus an extra term which depends
-on term-independent statistics (such as the normalised document length).
-
-For example, here's an implementation of "coordinate matching" - each matching
-term scores one point::
-
-    class CoordinateWeight : public Xapian::Weight {
-      public:
-	CoordinateWeight * clone() const { return new CoordinateWeight; }
-	CoordinateWeight() { }
-	~CoordinateWeight() { }
-
-	std::string name() const { return "Coord"; }
-	std::string serialise() const { return ""; }
-	CoordinateWeight * unserialise(const std::string &) const {
-	    return new CoordinateWeight;
-	}
-
-	Xapian::weight get_sumpart(Xapian::termcount, Xapian::doclength) const {
-            return 1;
-        }
-	Xapian::weight get_maxpart() const { return 1; }
-
-	Xapian::weight get_sumextra(Xapian::doclength) const { return 0; }
-	Xapian::weight get_maxextra() const { return 0; }
-
-	bool get_sumpart_needs_doclength() const { return false; }
-    };
-
-.. FIXME: add a more complex example now that user-defined weight classes
-   can see the statistics.

@@ -23,10 +23,8 @@ Whether two documents count as duplicates of one another is determined by their
 collapsed, but otherwise documents with the same collapse key will be collapsed
 together.
 
-Currently the collapse key is taken from a value slot you specify (via the
-method ``Enquire::set_collapse_key()``), but in the future you should be able
-to build collapse keys dynamically using ``Xapian::KeyMaker`` as you already
-can for sort keys.
+The collapse key is taken from a value slot you specify via the
+``#x_enquire.collapse_key``.
 
 Performance
 ===========
@@ -42,18 +40,23 @@ the matcher has to consider many more potential matches.
 API
 ===
 
-To enable collapsing, call the method ``Enquire::set_collapse_key`` with the
-value slot, and optionally the number of matches with each collapse key to keep
-(this defaults to 1 if not specified), e.g.::
+To enable collapsing, fill the field ``#x_enquire.collapse_key`` with the
+value slot and optionally the ``collapse_max`` field with the number of matches 
+with each collapse key to keep (this defaults to 1 if not specified), e.g.::
 
     // Collapse on value slot 4, leaving at most 2 documents with each
     // collapse key.
-    enquire.set_collapse_key(4, 2);
+    #x_enquire{collapse_key = 4, collapse_max = 2}
 
-Once you have the ``MSet`` object, you can read the collapse key for each
-match with ``MSetIterator::get_collapse_key()``, and also the "collapse count"
-with ``MSetIterator::get_collapse_count()``.  The latter is a lower bound on
-the number of documents with the same collapse key which collapsing eliminated.
+Once you have the QLC table based on the ``MSet`` object, you can read the 
+collapse key for each match with ``collapse_key``, and also the "collapse count"
+with ``collapse_count``.  The latter is a lower bound on the number of documents 
+with the same collapse key which collapsing eliminated::
+    -record(iter, {docid, collapse_key, collapse_count}).
+    Meta = xapian_record:record(iter, record_info(fields, iter)),
+    Table = xapian_mset_qlc:table(Server, MSetResourceId, Meta),
+    QueryFilter = qlc:q([CC || #iter{collapse_count=CC} <- Table]).
+
 
 Beware that if you have a percentage cutoff active, then the collapse count
 will (at least in the current implementation) will always be either 0 or 1
@@ -67,9 +70,10 @@ size if you'd asked for enough matches to get them all), the matcher also
 calculates bounds and an estimate for what the MSet size would be if collapsing
 had not been used - you can obtain these using these methods::
 
-    Xapian::doccount get_uncollapsed_matches_lower_bound() const;
-    Xapian::doccount get_uncollapsed_matches_estimated() const;
-    Xapian::doccount get_uncollapsed_matches_upper_bound() const;
+    xapian_server:mset_info(Server, MSetResource, [
+         uncollapsed_matches_lower_bound,
+         uncollapsed_matches_estimated,
+         uncollapsed_matches_upper_bound]).
 
 Examples
 ========
